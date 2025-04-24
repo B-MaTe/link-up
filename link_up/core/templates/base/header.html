@@ -1,0 +1,17 @@
+<header>
+    <nav>
+        <ul>
+            <li><a href="{% url 'index' %}">Home</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'user_info' %}">User Info</a></li>
+            <li><form method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form></li>
+            {% else %}
+            <li><a href="{% url 'login' %}">Login</a></li>
+            {% endif %}
+
+        </ul>
+    </nav>
+</header>

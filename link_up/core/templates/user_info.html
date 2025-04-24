@@ -1,0 +1,12 @@
+{% extends 'base/base.html' %}
+
+{% block title %}User Information{% endblock %}
+
+{% block content %}
+    <h1>User Information</h1>
+
+    <p><strong>felhasznalonev:</strong> {{ user.felhasznalonev }}</p>
+    <p><strong>utolso_bejelentkezes:</strong> {{ user.utolso_bejelentkezes }}</p>
+    <p><strong>csatlakozas_ido:</strong> {{ user.csatlakozas_ido }}</p>
+    <p><strong>Jelenlegi ido: {{ time }}</strong></p>
+{% endblock %}

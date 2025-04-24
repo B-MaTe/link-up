@@ -1,0 +1,22 @@
+
+1. oracle-ban hozz letre egy usert es adj neki persmissionsoket egy dba felhasznaloval:
+CREATE USER C##linkupuser IDENTIFIED BY "C##linkupuser";
+GRANT CREATE SESSION TO C##linkupuser;
+GRANT CREATE TABLE TO C##linkupuser;
+GRANT ALTER ANY TABLE TO C##linkupuser;
+GRANT DROP ANY TABLE TO C##linkupuser;
+GRANT CREATE SEQUENCE TO C##linkupuser;
+GRANT ALTER ANY SEQUENCE TO C##linkupuser;
+GRANT DROP ANY SEQUENCE TO C##linkupuser;
+GRANT CREATE TRIGGER TO C##linkupuser;
+GRANT DROP ANY TRIGGER TO C##linkupuser;
+GRANT CREATE PROCEDURE TO C##linkupuser;
+GRANT CREATE VIEW TO C##linkupuser;
+GRANT GRANT ANY PRIVILEGE TO C##linkupuser;
+GRANT QUOTA UNLIMITED ON USERS TO C##linkupuser;
+
+2. all_in_one.sql lefuttatas oracle-ban C##linkupuser user-rel
+3. a settings.py-ban a db csatlakozási adatok átírása, ha szükséges
+4. pip install -r requirements.txt
+5. python manage.py migrate
+6. python manage.py runserver
