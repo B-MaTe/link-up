@@ -2,7 +2,7 @@
 
 -- Sequence for Felhasznalok (Users)
 CREATE SEQUENCE felhasznalok_seq
-START WITH 1
+START WITH 100
 INCREMENT BY 1
 NOCACHE;
 
@@ -11,7 +11,7 @@ NOCACHE;
 
 -- Sequence for Csoportok (Groups)
 CREATE SEQUENCE csoportok_seq
-START WITH 1
+START WITH 100
 INCREMENT BY 1
 NOCACHE;
 
@@ -20,18 +20,18 @@ NOCACHE;
 
 -- Sequence for Uzenetek (Messages)
 CREATE SEQUENCE uzenetek_seq
-START WITH 1
+START WITH 100
 INCREMENT BY 1
 NOCACHE;
 
 -- Sequence for Bejegyzesek (Posts)
 CREATE SEQUENCE bejegyzesek_seq
-START WITH 1
+START WITH 100
 INCREMENT BY 1
 NOCACHE;
 
 -- Sequence for Kommentek (Comments)
 CREATE SEQUENCE kommentek_seq
-START WITH 1
+START WITH 100
 INCREMENT BY 1
 NOCACHE;

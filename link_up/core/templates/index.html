@@ -1,5 +1,14 @@
 {% extends 'base/base.html' %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'style.css' %}">
 
 {% block content %}
-    <h1>Üdvözöljük a Link Up oldalon</h1>
+    <div  class="welcome">
+        <div class="login-box">
+            <div class="login-logo">
+                <img src="{% static 'linkup_logo.png' %}" alt="Bejelentkezés">
+            </div>
+            <h1>Üdvözöljük a <span class="title-hover">Link Up</span>-on!</h1>
+        </div>
+    </div>
 {% endblock %}

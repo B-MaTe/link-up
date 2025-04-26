@@ -1,0 +1,19 @@
+<form method="post" action="">
+    {% csrf_token %}
+
+    <label for="felhasznalo">Létrehozó felhasználó:</label>
+    <select name="felhasznalo" id="felhasznalo">
+        {% for user in felhasznalok %}
+            <option value="{{ user.id }}">{{ user.felhasznalonev }}</option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label for="letrehozas_ido">Létrehozás ideje:</label>
+    <input type="datetime-local" id="letrehozas_ido" name="letrehozas_ido">
+
+    <br><br>
+
+    <button type="submit">Csoport létrehozása</button>
+</form>
