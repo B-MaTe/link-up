@@ -1,0 +1,29 @@
+<form method="post" action="" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label for="felhasznalo">Felhasználó:</label>
+    <select name="felhasznalo" id="felhasznalo" required>
+        {% for felhasznalo in felhasznalok %}
+            <option value="{{ felhasznalo.id }}">{{ felhasznalo.felhasznalonev }}</option>
+        {% endfor %}
+    </select>
+
+    <br><br>
+
+    <label for="feltoltott_kep">Feltöltött kép:</label>
+    <input type="file" id="feltoltott_kep" name="feltoltott_kep" required>
+
+    <br><br>
+
+    <label for="letrehozasi_ido">Létrehozási idő:</label>
+    <input type="datetime-local" id="letrehozasi_ido" name="letrehozasi_ido" required>
+
+    <br><br>
+
+    <label for="tartalom">Tartalom:</label>
+    <textarea id="tartalom" name="tartalom" rows="4" cols="50" required></textarea>
+
+    <br><br>
+
+    <button type="submit">Mentés</button>
+</form>

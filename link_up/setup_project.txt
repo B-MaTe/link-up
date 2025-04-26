@@ -13,7 +13,7 @@ GRANT DROP ANY TRIGGER TO C##linkupuser;
 GRANT CREATE PROCEDURE TO C##linkupuser;
 GRANT CREATE VIEW TO C##linkupuser;
 GRANT GRANT ANY PRIVILEGE TO C##linkupuser;
-GRANT QUOTA UNLIMITED ON USERS TO C##linkupuser;
+grant all privileges to C##linkupuser;
 
 2. all_in_one.sql lefuttatas oracle-ban C##linkupuser user-rel
 3. a settings.py-ban a db csatlakozási adatok átírása, ha szükséges

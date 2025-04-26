@@ -1,17 +1,20 @@
 <header>
-    <nav>
-        <ul>
-            <li><a href="{% url 'index' %}">Home</a></li>
+    <nav class="navbar">
+        <ul class="nav-list">
+            <li class="nav-item"><a href="{% url 'index' %}" class="nav-link">Home</a></li>
             {% if user.is_authenticated %}
-            <li><a href="{% url 'user_info' %}">User Info</a></li>
-            <li><form method="POST" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form></li>
+                <li class="nav-item"><a href="{% url 'user_info' %}" class="nav-link">User Info</a></li>
             {% else %}
-            <li><a href="{% url 'login' %}">Login</a></li>
+                <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
             {% endif %}
-
         </ul>
+
+        {% if user.is_authenticated %}
+        <form method="POST" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="logout-button">Logout</button>
+        </form>
+        {% endif %}
     </nav>
 </header>
+
