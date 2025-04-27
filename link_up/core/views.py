@@ -6,7 +6,8 @@ from django.shortcuts import render, redirect
 from django.utils.timezone import now
 from .forms import CustomRegisterForm
 from core.forms import CustomLoginForm
-
+from django.db import connection
+from django.http import HttpResponse
 
 class CustomLoginView(LoginView):
     authentication_form = CustomLoginForm
@@ -39,3 +40,30 @@ def register(request):
     else:
         form = CustomRegisterForm()
     return render(request, 'registration/register.html', {'form': form})
+
+
+def health(request):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1 FROM dual")
+            db_status = cursor.fetchone()
+        if db_status and db_status[0] == 1:
+            status = "Az adatbázis sikeresen kapcsolódott."
+        else:
+            status = "Sikertelen adatbázis kapcsolodás."
+    except Exception as e:
+        status = f"Adatbázis hiba: {str(e)}"
+
+    html_content = f"""
+    <html>
+    <head><title>Health Check</title></head>
+    <body>
+        <h1>Health Check</h1>
+        <p>{status}</p>
+    </body>
+    </html>
+    """
+
+    return HttpResponse(html_content)
+
+
