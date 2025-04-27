@@ -9,7 +9,9 @@ from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from django.db import connection
 
 
 class Bejegyzes(models.Model):
@@ -59,7 +61,12 @@ class FelhasznaloManager(BaseUserManager):
     def create_user(self, felhasznalonev, jelszo=None, **extra_fields):
         if not felhasznalonev:
             raise ValueError('The Username must be set')
-        user = self.model(felhasznalonev=felhasznalonev, **extra_fields)
+
+        cursor = connection.cursor()
+        cursor.execute("SELECT felhasznalok_seq.NEXTVAL FROM dual")
+        user_id = cursor.fetchone()[0]
+
+        user = self.model(id=user_id, felhasznalonev=felhasznalonev, **extra_fields)
         user.set_password(jelszo)
         user.admin = 0
         user.save(using=self._db)
