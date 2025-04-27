@@ -1,3 +1,7 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
 <form method="post" action="" enctype="multipart/form-data">
     {% csrf_token %}
 
@@ -27,3 +31,4 @@
 
     <button type="submit">Mentés</button>
 </form>
+{%  endblock %}
