@@ -1,6 +1,10 @@
 {% extends 'admin/base_admin.html' %}
 
 {% block content %}
+<h1>
+    {% if is_edit %}Üzenet szerkesztése{% else %}Új üzenet hozzáadása{% endif %}
+</h1>
+
 {% if errors %}
     <div class="errorlist" style="color: red;">
         <ul>
@@ -29,8 +33,8 @@
     <select name="csoport" id="csoport" required>
         {% for c in csoportok %}
             <option value="{{ c.id }}"
-                {% if input.id|default:'' == c.id|stringformat:"s" %}selected{% endif %}>
-                {{ c.id }}
+                {% if input.csoport_id|default:'' == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c }}
             </option>
         {% endfor %}
     </select>
@@ -45,6 +49,13 @@
     <textarea name="tartalom" id="tartalom" maxlength="1000" required>{{ input.tartalom|default:'' }}</textarea>
     <br><br>
 
-    <button type="submit">Küldés</button>
+    <button type="submit">{% if is_edit %}Mentés{% else %}Küldés{% endif %}</button>
 </form>
+
+{% if is_edit %}
+    <form method="post" action="{% url 'admin:uzenet_delete' uzenet.id %}" style="margin-top: 2em;">
+        {% csrf_token %}
+        <button type="submit" style="color: red;">Törlés</button>
+    </form>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+
+    <p><a href="{% url 'admin:bejegyzes_add' %}">Bejegyzés hozzáadása</a></p>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Felhasználó</th>
+        <th>Létrehozási idő</th>
+        <th>Feltöltött kép</th>
+        <th>Tartalom</th>
+        <th>Műveletek</th>
+    </tr>
+    {% for bejegyzes in bejegyzesek %}
+    <tr>
+        <td>{{ bejegyzes.id }}</td>
+        <td>{{ bejegyzes.felhasznalo }}</td>
+        <td>{{ bejegyzes.letrehozasi_ido }}</td>
+        <td>{{ bejegyzes.feltoltott_kep }}</td>
+        <td>{{ bejegyzes.tartalom }}</td>
+        <td>
+            <a href="{% url 'admin:bejegyzes_edit' bejegyzes.id %}">Szerkesztés</a>
+            <a href="{% url 'admin:bejegyzes_delete' bejegyzes.id %}">Törlés</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

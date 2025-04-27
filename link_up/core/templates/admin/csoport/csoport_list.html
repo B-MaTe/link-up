@@ -1,0 +1,25 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+
+    <p><a href="{% url 'admin:csoport_add' %}">Csoport hozzáadása</a></p>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Felhasználó</th>
+        <th>Létrehozás idő</th>
+        <th>Műveletek</th>
+    </tr>
+    {% for csoport in csoportok %}
+    <tr>
+        <td>{{ csoport.id }}</td>
+        <td>{{ csoport.felhasznalo }}</td>
+        <td>{{ csoport.letrehozas_ido }}</td>
+        <td>
+            <a href="{% url 'admin:csoport_edit' csoport.id %}">Szerkesztés</a>
+            <a href="{% url 'admin:csoport_delete' csoport.id %}">Törlés</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

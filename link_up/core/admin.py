@@ -15,13 +15,26 @@ class AdminSite(admin.AdminSite):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
+            path('bejegyzes/', self.admin_view(admin_views.bejegyzes_list), name='bejegyzes'),
+            path('bejegyzes/add/', self.admin_view(admin_views.bejegyzes), name='bejegyzes_add'),
+            path('bejegyzes/<int:pk>/edit/', self.admin_view(admin_views.bejegyzes), name='bejegyzes_edit'),
+            path('bejegyzes/<int:pk>/delete/', self.admin_view(admin_views.bejegyzes_delete), name='bejegyzes_delete'),
 
-            path('bejegyzes/', self.admin_view(admin_views.bejegyzes), name='bejegyzes'),
-            path('csoport/', self.admin_view(admin_views.csoport), name='csoport'),
-            path('komment/', self.admin_view(admin_views.komment), name='komment'),
-            path('uzenet/', self.admin_view(admin_views.uzenet), name='uzenet'),
+            path('csoport/', self.admin_view(admin_views.csoport_list), name='csoport'),
+            path('csoport/add/', self.admin_view(admin_views.csoport), name='csoport_add'),
+            path('csoport/<int:pk>/edit/', self.admin_view(admin_views.csoport), name='csoport_edit'),
+            path('csoport/<int:pk>/delete/', self.admin_view(admin_views.csoport_delete), name='csoport_delete'),
+
+            path('komment/', self.admin_view(admin_views.komment_list), name='komment'),
+            path('komment/add/', self.admin_view(admin_views.komment), name='komment_add'),
+            path('komment/<int:pk>/edit/', self.admin_view(admin_views.komment), name='komment_edit'),
+            path('komment/<int:pk>/delete/', self.admin_view(admin_views.komment_delete), name='komment_delete'),
+
+            path('uzenet/', self.admin_view(admin_views.uzenet_list), name='uzenet'),
+            path('uzenet/add/', self.admin_view(admin_views.uzenet), name='uzenet_add'),
+            path('uzenet/<int:pk>/edit/', self.admin_view(admin_views.uzenet), name='uzenet_edit'),
+            path('uzenet/<int:pk>/delete/', self.admin_view(admin_views.uzenet_delete), name='uzenet_delete'),
         ]
-        print(urls)
         return custom_urls + urls
 
 

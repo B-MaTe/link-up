@@ -1,0 +1,29 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+
+    <p><a href="{% url 'admin:uzenet_add' %}">Üzenet hozzáadása</a></p>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Felhasználó</th>
+        <th>Csoport</th>
+        <th>Küldési idő</th>
+        <th>Tartalom</th>
+        <th>Műveletek</th>
+    </tr>
+    {% for uzenet in uzenetek %}
+    <tr>
+        <td>{{ uzenet.id }}</td>
+        <td>{{ uzenet.felhasznalo }}</td>
+        <td>{{ uzenet.csoport }}</td>
+        <td>{{ uzenet.kuldesi_ido }}</td>
+        <td>{{ uzenet.tartalom }}</td>
+        <td>
+            <a href="{% url 'admin:uzenet_edit' uzenet.id %}">Szerkesztés</a>
+            <a href="{% url 'admin:uzenet_delete' uzenet.id %}">Törlés</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

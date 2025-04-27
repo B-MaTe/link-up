@@ -1,0 +1,29 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+
+    <p><a href="{% url 'admin:komment_add' %}">Komment hozzáadása</a></p>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Felhasználó</th>
+        <th>Feltöltési idő</th>
+        <th>Bejegyzés</th>
+        <th>Tartalom</th>
+        <th>Műveletek</th>
+    </tr>
+    {% for komment in kommentek %}
+    <tr>
+        <td>{{ komment.id }}</td>
+        <td>{{ komment.felhasznalo }}</td>
+        <td>{{ komment.feltoltesi_ido }}</td>
+        <td>{{ komment.bejegyzes }}</td>
+        <td>{{ komment.tartalom }}</td>
+        <td>
+            <a href="{% url 'admin:komment_edit' komment.id %}">Szerkesztés</a>
+            <a href="{% url 'admin:komment_delete' komment.id %}">Törlés</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
