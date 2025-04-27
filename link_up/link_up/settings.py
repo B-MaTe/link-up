@@ -99,11 +99,11 @@ WSGI_APPLICATION = 'link_up.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': 'XE',
-        'USER': 'C##linkupuser',
-        'PASSWORD': 'C##linkupuser',
-        'HOST': 'localhost',
-        'PORT': '1521',
+        'NAME': 'localhost/linkup1',
+        'USER': 'linkup_user',
+        'PASSWORD': 'aa',
+        # 'HOST': 'localhost',
+        # 'PORT': '1521',
     }
 }
 

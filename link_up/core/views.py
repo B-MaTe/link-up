@@ -2,12 +2,17 @@ import os
 import uuid
 from datetime import datetime, timezone
 
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.utils.timezone import now
+from django.views.generic import CreateView
 
+# from django.views.generic.edit import CreateView
+from .forms import CustomRegisterForm
 from core.forms import CustomLoginForm
 from core.models import Felhasznalo, Bejegyzes, Csoport, Komment, Uzenet
 from link_up import settings
@@ -168,3 +173,15 @@ def uzenet(request):
             'felhasznalok': felhasznalok,
             'csoportok': csoportok
         })
+
+
+def register(request):
+    if request.method == 'POST':
+        form = CustomRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=True)
+            login(request, user)
+            return redirect('index')
+    else:
+        form = CustomRegisterForm()
+    return render(request, 'registration/register.html', {'form': form})
