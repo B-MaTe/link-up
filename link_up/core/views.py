@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect
 from django.utils.timezone import now
 
 from core.forms import CustomLoginForm
-from core.models import Felhasznalo, Bejegyzes, Csoport, Komment
+from core.models import Felhasznalo, Bejegyzes, Csoport, Komment, Uzenet
 from link_up import settings
 
 
@@ -131,3 +131,40 @@ def komment(request):
         bejegyzesek = Bejegyzes.objects.all()
         felhasznalok = Felhasznalo.objects.all()
         return render(request, 'admin/komment.html', {'bejegyzesek': bejegyzesek, 'felhasznalok': felhasznalok})
+
+
+def uzenet(request):
+    if request.method == 'POST':
+        felhasznalo_id = request.POST.get('felhasznalo')
+        csoport_id = request.POST.get('csoport')
+        kuldesi_ido = request.POST.get('kuldesi_ido')
+        tartalom = request.POST.get('tartalom')
+
+        felhasznalo = None
+        if felhasznalo_id:
+            felhasznalo = Felhasznalo.objects.get(id=felhasznalo_id)
+
+        csoport = None
+        if csoport_id:
+            csoport = Csoport.objects.get(id=csoport_id)
+
+        if kuldesi_ido:
+            kuldesi_ido = datetime.strptime(kuldesi_ido, "%Y-%m-%dT%H:%M")
+
+        uj_uzenet = Uzenet(
+            felhasznalo=felhasznalo,
+            csoport=csoport,
+            kuldesi_ido=kuldesi_ido,
+            tartalom=tartalom
+        )
+        uj_uzenet.save()
+
+        return redirect('index')
+
+    else:
+        felhasznalok = Felhasznalo.objects.all()
+        csoportok = Csoport.objects.all()
+        return render(request, 'admin/uzenet.html', {
+            'felhasznalok': felhasznalok,
+            'csoportok': csoportok
+        })
