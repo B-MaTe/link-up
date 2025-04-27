@@ -1,29 +1,50 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+{% if errors %}
+    <div class="errorlist" style="color: red;">
+        <ul>
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
 <form method="post">
     {% csrf_token %}
 
     <label for="felhasznalo">Felhasználó:</label>
-    <select name="felhasznalo" id="felhasznalo">
+    <select name="felhasznalo" id="felhasznalo" required>
         {% for f in felhasznalok %}
-            <option value="{{ f.id }}">{{ f }}</option>
+            <option value="{{ f.id }}"
+                {% if input.felhasznalo_id|default:'' == f.id|stringformat:"s" %}selected{% endif %}>
+                {{ f }}
+            </option>
         {% endfor %}
     </select>
     <br><br>
 
     <label for="csoport">Csoport:</label>
-    <select name="csoport" id="csoport">
+    <select name="csoport" id="csoport" required>
         {% for c in csoportok %}
-            <option value="{{ c.id }}">{{ c }}</option>
+            <option value="{{ c.id }}"
+                {% if input.id|default:'' == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c.id }}
+            </option>
         {% endfor %}
     </select>
     <br><br>
 
     <label for="kuldesi_ido">Küldési idő:</label>
-    <input type="datetime-local" name="kuldesi_ido" id="kuldesi_ido">
+    <input type="datetime-local" name="kuldesi_ido" id="kuldesi_ido"
+           value="{{ input.kuldesi_ido|default:'' }}">
     <br><br>
 
     <label for="tartalom">Tartalom:</label>
-    <textarea name="tartalom" id="tartalom" maxlength="1000"></textarea>
+    <textarea name="tartalom" id="tartalom" maxlength="1000" required>{{ input.tartalom|default:'' }}</textarea>
     <br><br>
 
     <button type="submit">Küldés</button>
 </form>
+{% endblock %}

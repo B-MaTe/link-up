@@ -10,11 +10,4 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('register/', views.register, name='register'),
-
-
-    #administrator urls
-    path('administrator/bejegyzes/', views.bejegyzes, name='bejegyzes'),
-    path('administrator/csoport/', views.csoport, name='csoport'),
-    path('administrator/komment/', views.komment, name='komment'),
-    path('administrator/uzenet/', views.uzenet, name='uzenet'),
 ]

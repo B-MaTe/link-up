@@ -1,0 +1,14 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+  {{ block.super }}
+  <div class="module" id="custom-links">
+    <h2>További modellek</h2>
+    <ul>
+      <li><a href="{% url 'admin:bejegyzes' %}">Bejegyzés</a></li>
+      <li><a href="{% url 'admin:csoport' %}">Csoport</a></li>
+      <li><a href="{% url 'admin:komment' %}">Komment</a></li>
+      <li><a href="{% url 'admin:uzenet' %}">Üzenet</a></li>
+    </ul>
+  </div>
+{% endblock %}

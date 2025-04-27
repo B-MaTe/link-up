@@ -1,19 +1,37 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+{% if errors %}
+    <div class="errorlist" style="color: red;">
+        <ul>
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
 <form method="post" action="">
     {% csrf_token %}
 
     <label for="felhasznalo">Létrehozó felhasználó:</label>
-    <select name="felhasznalo" id="felhasznalo">
+    <select name="felhasznalo" id="felhasznalo" required>
         {% for user in felhasznalok %}
-            <option value="{{ user.id }}">{{ user.felhasznalonev }}</option>
+            <option value="{{ user.id }}"
+                {% if input.felhasznalo_id|default:'' == user.id|stringformat:"s" %}selected{% endif %}>
+                {{ user.felhasznalonev }}
+            </option>
         {% endfor %}
     </select>
 
     <br><br>
 
     <label for="letrehozas_ido">Létrehozás ideje:</label>
-    <input type="datetime-local" id="letrehozas_ido" name="letrehozas_ido">
+    <input type="datetime-local" id="letrehozas_ido" name="letrehozas_ido"
+           value="{{ input.letrehozas_ido|default:'' }}" required>
 
     <br><br>
 
     <button type="submit">Csoport létrehozása</button>
 </form>
+{% endblock %}

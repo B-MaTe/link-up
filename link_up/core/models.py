@@ -9,9 +9,8 @@ from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from django.db import connection
+from django.utils.timezone import now
 
 
 class Bejegyzes(models.Model):
@@ -68,7 +67,8 @@ class FelhasznaloManager(BaseUserManager):
 
         user = self.model(id=user_id, felhasznalonev=felhasznalonev, **extra_fields)
         user.set_password(jelszo)
-        user.admin = 0
+        user.csatlakozas_ido = now()
+        user.utolso_bejelentkezes = now()
         user.save(using=self._db)
         return user
 
@@ -84,8 +84,6 @@ class Felhasznalo(AbstractBaseUser, PermissionsMixin):
     utolso_bejelentkezes = models.DateTimeField(blank=True, null=True)
     csatlakozas_ido = models.DateTimeField(blank=True, null=True, auto_now_add=True)
     admin = models.BooleanField(null=True, blank=True, default=False)
-
-    groups = models.ManyToManyField(Csoport, related_name='felhasznalok', blank=True)
 
     objects = FelhasznaloManager()
 

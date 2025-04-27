@@ -1,19 +1,22 @@
 <header>
     <nav class="navbar">
         <ul class="nav-list">
-            <li class="nav-item"><a href="{% url 'index' %}" class="nav-link">Home</a></li>
+            <li class="nav-item"><a href="{% url 'index' %}" class="nav-link">Főoldal</a></li>
             {% if user.is_authenticated %}
-                <li class="nav-item"><a href="{% url 'user_info' %}" class="nav-link">User Info</a></li>
+                <li class="nav-item"><a href="{% url 'user_info' %}" class="nav-link">Profil</a></li>
             {% else %}
-                <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
-                <li class="nav-item"><a href="{% url 'register' %}" class="nav-link">Sign Up</a></li>
+                <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Bejelentkezés</a></li>
+                <li class="nav-item"><a href="{% url 'register' %}" class="nav-link">Regisztráció</a></li>
+            {% endif %}
+            {% if user.is_superuser %}
+                <li class="nav-item"><a href="{% url 'admin:index' %}" class="nav-link">Admin</a></li>
             {% endif %}
         </ul>
 
         {% if user.is_authenticated %}
         <form method="POST" action="{% url 'logout' %}" class="logout-form">
             {% csrf_token %}
-            <button type="submit" class="logout-button">Logout</button>
+            <button type="submit" class="logout-button">Kijelentkezés</button>
         </form>
         {% endif %}
     </nav>

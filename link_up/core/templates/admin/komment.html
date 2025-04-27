@@ -1,11 +1,17 @@
-<!DOCTYPE html>
-<html lang="hu">
-<head>
-    <meta charset="UTF-8">
-    <title>Új komment hozzáadása</title>
-</head>
-<body>
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
     <h1>Új komment hozzáadása</h1>
+
+    {% if errors %}
+        <div class="errorlist" style="color: red;">
+            <ul>
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
 
     <form method="post">
         {% csrf_token %}
@@ -13,24 +19,30 @@
         <label for="felhasznalo">Felhasználó:</label>
         <select name="felhasznalo" id="felhasznalo" required>
             {% for felhasznalo in felhasznalok %}
-                <option value="{{ felhasznalo.id }}">{{ felhasznalo.felhasznalonev }}</option>
+                <option value="{{ felhasznalo.id }}"
+                    {% if input.felhasznalo_id|default:'' == felhasznalo.id|stringformat:"s" %}selected{% endif %}>
+                    {{ felhasznalo.felhasznalonev }}
+                </option>
             {% endfor %}
         </select>
 
         <label for="bejegyzes_id">Bejegyzés kiválasztása:</label>
         <select id="bejegyzes_id" name="bejegyzes_id" required>
             {% for bejegyzes in bejegyzesek %}
-                <option value="{{ bejegyzes.id }}">{{ bejegyzes.id }}</option>
+                <option value="{{ bejegyzes.id }}"
+                    {% if input.bejegyzes_id|default:'' == bejegyzes.id|stringformat:"s" %}selected{% endif %}>
+                    {{ bejegyzes.id }}
+                </option>
             {% endfor %}
         </select><br><br>
 
         <label for="feltoltesi_ido">Feltöltési idő:</label>
-        <input type="datetime-local" id="feltoltesi_ido" name="feltoltesi_ido" required><br><br>
+        <input type="datetime-local" id="feltoltesi_ido" name="feltoltesi_ido" required
+               value="{{ input.feltoltesi_ido|default:'' }}"><br><br>
 
         <label for="tartalom">Tartalom:</label><br>
-        <textarea id="tartalom" name="tartalom" rows="5" cols="60" required></textarea><br><br>
+        <textarea id="tartalom" name="tartalom" rows="5" cols="60" required>{{ input.tartalom|default:'' }}</textarea><br><br>
 
         <button type="submit">Komment küldése</button>
     </form>
-</body>
-</html>
+{% endblock %}

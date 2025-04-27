@@ -1,7 +1,6 @@
 # forms.py
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from django.db import IntegrityError
 
 from .models import Felhasznalo
 from django.utils.translation import gettext_lazy as _
