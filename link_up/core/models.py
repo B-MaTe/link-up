@@ -15,7 +15,7 @@ from django.utils.timezone import now
 
 class Bejegyzes(models.Model):
     id = models.AutoField(primary_key=True)
-    felhasznalo = models.ForeignKey('Felhasznalo', models.DO_NOTHING, blank=True, null=True)
+    felhasznalo = models.ForeignKey('Felhasznalo', models.DO_NOTHING, blank=True, null=True, related_name='bejegyzesek')
     feltoltott_kep = models.CharField(max_length=128, blank=True, null=True)
     letrehozasi_ido = models.DateTimeField(blank=True, null=True)
     tartalom = models.CharField(max_length=1000, blank=True, null=True)
@@ -84,6 +84,7 @@ class Felhasznalo(AbstractBaseUser, PermissionsMixin):
     utolso_bejelentkezes = models.DateTimeField(blank=True, null=True)
     csatlakozas_ido = models.DateTimeField(blank=True, null=True, auto_now_add=True)
     admin = models.BooleanField(null=True, blank=True, default=False)
+    profil_kep = models.CharField(max_length=128, blank=True, null=True)
 
     objects = FelhasznaloManager()
 

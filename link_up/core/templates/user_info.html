@@ -30,22 +30,31 @@
                         <label class="form-label"><span class="fw-bold">Csatlakozási idő:&nbsp;&nbsp;&nbsp;&nbsp;</span> {{ user.csatlakozas_ido }}</label>
                     </form>
                 </div>
-                <div class="mt-4 p-3" style="border: 2px solid #D0D0D0FF; border-radius: 10px;">
-                    <form method="post">
-                        {% csrf_token %}
-                        <label class="form-label fw-bold">Felhasználónév megváltoztatása:</label>
-                        <input type="text" name="new_username" class="form-control mb-3" placeholder="Új felhasználónév">
-                        <button type="submit" name="action" value="change_username" class="btn btn-success w-100">Elfogadás</button>
-                    </form>
-                </div>
+                {% if readonly %}
+                    <div class="mt-4 p-3" style="border: 2px solid #D0D0D0FF; border-radius: 10px;">
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="add_user" class="btn btn-success w-100">Ismerősnek jelölés</button>
+                        </form>
+                    </div>  
+                {% else %}
+                    <div class="mt-4 p-3" style="border: 2px solid #D0D0D0FF; border-radius: 10px;">
+                        <form method="post">
+                            {% csrf_token %}
+                            <label class="form-label fw-bold">Felhasználónév megváltoztatása:</label>
+                            <input type="text" name="new_username" class="form-control mb-3" placeholder="Új felhasználónév">
+                            <button type="submit" name="action" value="change_username" class="btn btn-success w-100">Elfogadás</button>
+                        </form>
+                    </div>
 
-                <div class="mt-4 p-3 bg-danger bg-opacity-25" style="border-radius: 10px;">
-                    <form method="post">
-                        {% csrf_token %}
-                        <p class="fw-bold">Profil törlése:</p>
-                        <button type="submit" name="action" value="delete_profile" class="btn btn-danger w-100">TÖRLÉS</button>
-                    </form>
-                </div>
+                    <div class="mt-4 p-3 bg-danger bg-opacity-25" style="border-radius: 10px;">
+                        <form method="post">
+                            {% csrf_token %}
+                            <p class="fw-bold">Profil törlése:</p>
+                            <button type="submit" name="action" value="delete_profile" class="btn btn-danger w-100">TÖRLÉS</button>
+                        </form>
+                    </div>
+                {% endif %}
             </div>
 
             {% comment %}<!-- Jobb oldal - Ismerősök -->
