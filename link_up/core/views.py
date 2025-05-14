@@ -8,6 +8,8 @@ from .forms import CustomRegisterForm
 from core.forms import CustomLoginForm
 from django.db import connection
 from django.http import HttpResponse
+from .service import bejegyzes_service
+
 
 class CustomLoginView(LoginView):
     authentication_form = CustomLoginForm
@@ -20,7 +22,26 @@ class CustomLoginView(LoginView):
         return super().form_valid(form)
 
 def index(request):
+    if request.method == 'GET':
+        return render(request, 'index.html')
+
+    if request.method == 'POST':
+        if "add-post" in request.POST:
+            text = request.POST.get('post')
+            img = request.FILES.get('image')
+
+            result = bejegyzes_service.create_bejegyzes(request, text, img)
+
+            if result == bejegyzes_service.BejegyzesResponse.PROFANITY:
+                return render(request, 'index.html', {'profanity': True})
+
+            if result == bejegyzes_service.BejegyzesResponse.ERROR:
+                return render(request, 'index.html', {'error': True})
+
+            return redirect('index')
+
     return render(request, 'index.html')
+
 
 
 @login_required

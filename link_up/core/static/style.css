@@ -128,3 +128,36 @@ a {
 .btn-primary:hover {
     background-color: #0056b3;
 }
+
+.bg-dark-gray {
+    background-color: #b3b3b3 !important;
+}
+
+.dark-gray {
+    color: #b3b3b3 !important;
+}
+
+.bg-light-gray {
+    background-color: #e0dbdb !important;
+}
+
+.light-gray {
+    color: #e0dbdb !important;
+}
+
+.file::file-selector-button {
+
+}
+
+.file::file-selector-button {
+    background:#e0dbdb;
+    color: white;
+    height: 100%;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.file::file-selector-button:hover {
+  background: #0056b3;
+}

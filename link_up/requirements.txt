@@ -1,3 +1,5 @@
 django~=5.1.7
 oracledb~=3.0.0
 django-debug-toolbar~=5.1.0
+requests~=2.32.3
+better-profanity~=0.7.0

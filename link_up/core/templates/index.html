@@ -2,12 +2,39 @@
 {% load static %}
 
 {% block content %}
+    {% if not user.is_authenticated %}
     <div  class="welcome">
         <div class="login-box">
             <div class="login-logo">
                 <img src="{% static 'linkup_logo.png' %}" alt="Bejelentkezés">
             </div>
             <h1>Üdvözöljük a <span class="title-hover">Link Up</span>-on!</h1>
+            <hr />
+            <h4><a href="{% url 'login' %}">Bejelentkezés</a> | <a href="{% url 'register' %}">Regisztráció</a></h4>
         </div>
     </div>
+    {% else %}
+        <div class="row p-4">
+            <div class="col-md-9 col-lg-9 col-sm-12">
+                <div class="card p-3 bg-dark-gray w-100 rounded" style="min-height: 70px;">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-8">
+                                <textarea class="rounded bg-light-gray border-0 my-auto w-100" name="post" style="height: 40px;" placeholder="Mi jár a fejedben?" required></textarea>
+                            </div>
+                            <div class="col-2">
+                                <input type="file" name="image" class="rounded bg-light-gray border-0 my-auto w-100 file" style="height: 40px;" >
+                            </div>
+                            <div class="col-2">
+                                <button type="submit" name="add-post" class="btn btn-success my-auto" style="height: 40px;">Publikálás</button>
+                            </div>
+                        </div>
+                        {{ profanity }}
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
 {% endblock %}
