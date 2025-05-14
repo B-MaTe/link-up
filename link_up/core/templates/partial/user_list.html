@@ -1,0 +1,15 @@
+{% load static %}
+<ul class="list-group">
+    {% for user in users %}
+        <li class="list-group-item">
+            <div class="row">
+            <div class="col-3 my-auto">
+                <img src="{% if user.profilkep %}{{ user.profilkep.url }}{% else %}{% static 'profile.png' %}{% endif %}" alt="{{ user.felhasznalonev }} profilkep" class="rounded-circle ratio-1x1 w-100">
+            </div>
+                <a class="user-search-text col-9 my-auto" href="{% url 'user_info' user.id %}">{{ user.felhasznalonev }}</a>
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item text-muted">Nincs találat.</li>
+    {% endfor %}
+</ul>

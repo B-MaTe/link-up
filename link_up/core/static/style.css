@@ -146,13 +146,10 @@ a {
 }
 
 .file::file-selector-button {
-
-}
-
-.file::file-selector-button {
     background:#e0dbdb;
     color: white;
     height: 100%;
+    width: 100%;
     border: none;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
@@ -160,4 +157,14 @@ a {
 
 .file::file-selector-button:hover {
   background: #0056b3;
+}
+
+.primary-text {
+    color: #4ea40b !important;
+}
+
+.user-search-text {
+    text-decoration: none !important;
+    color: #4ea40b !important;
+    font-weight: bold;
 }

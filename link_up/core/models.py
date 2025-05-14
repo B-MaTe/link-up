@@ -84,6 +84,7 @@ class Felhasznalo(AbstractBaseUser, PermissionsMixin):
     utolso_bejelentkezes = models.DateTimeField(blank=True, null=True)
     csatlakozas_ido = models.DateTimeField(blank=True, null=True, auto_now_add=True)
     admin = models.BooleanField(null=True, blank=True, default=False)
+    profil_kep = models.CharField(max_length=128, blank=True, null=True)
 
     objects = FelhasznaloManager()
 
