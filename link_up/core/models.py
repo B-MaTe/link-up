@@ -12,6 +12,8 @@ from django.db import models
 from django.db import connection
 from django.utils.timezone import now
 
+from link_up.settings import STATIC_URL
+
 
 class Bejegyzes(models.Model):
     id = models.AutoField(primary_key=True)
@@ -47,7 +49,7 @@ class FelhasznaloCsoport(models.Model):
 
 class FelhasznaloKapcsolat(models.Model):
     jelolo = models.OneToOneField('Felhasznalo', models.DO_NOTHING, primary_key=True)
-    jelolt = models.ForeignKey('Felhasznalo', models.DO_NOTHING, related_name='felhasznalokapcsolatok_jelolt_set')
+    jelolt = models.ForeignKey('Felhasznalo', models.DO_NOTHING, related_name='felhasznalokapcsolatok')
     statusz = models.CharField(max_length=11, blank=True, null=True)
 
     class Meta:
