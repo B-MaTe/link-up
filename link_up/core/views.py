@@ -1,4 +1,3 @@
-from datetime import datetime
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
@@ -6,14 +5,15 @@ from django.shortcuts import render, redirect
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 
-from .dto import SearchUser
+from .dto import SearchUser, Page
 from .forms import CustomRegisterForm
 from core.forms import CustomLoginForm
 from django.db import connection
 from django.http import HttpResponse
 
-from .models import Felhasznalo, Bejegyzes
-from .service import bejegyzes_service
+from .models import Felhasznalo, Bejegyzes, FelhasznaloKapcsolat
+from .service import bejegyzes_service, image_service
+from core.enums import BejegyzesResponse, ImageCreationResponse, KapcsolatStatus, from_string
 
 
 class CustomLoginView(LoginView):
@@ -30,9 +30,16 @@ def index(request):
     data = {}
 
     if request.method == 'GET':
-        posts = Bejegyzes.objects.all().order_by('-id')[:10]
+        page: Page = Page(1, 5, 1, False, False)
+        page.current = int(request.GET.get('page', 1))
+        count_pages = Bejegyzes.objects.all().count()
+        page.total_pages = count_pages // page.size
+        page.has_next = count_pages > page.current * page.size
+        page.has_previous = page.current > 0
+        page.page_range = range(1, page.total_pages)
+        posts = Bejegyzes.objects.all().order_by('-id')[page.current * page.size:(page.current + 1) * page.size]
 
-        return render(request, 'index.html', {'posts': posts})
+        return render(request, 'index.html', {'posts': posts, 'page': page})
 
     if request.method == 'POST':
         if "add-post" in request.POST:
@@ -44,10 +51,13 @@ def index(request):
 
             result = bejegyzes_service.create_bejegyzes(request, text, img)
 
-            if result == bejegyzes_service.BejegyzesResponse.PROFANITY:
+            if result == BejegyzesResponse.PROFANITY:
                 return render(request, 'index.html', {'profanity': True, 'data': data})
 
-            if result == bejegyzes_service.BejegyzesResponse.ERROR:
+            if result == BejegyzesResponse.FILE_FORMAT_ERROR:
+                return render(request, 'index.html', {'file_format_error': True, 'data': data})
+
+            if result == BejegyzesResponse.ERROR:
                 return render(request, 'index.html', {'error': True, 'data': data})
 
             return redirect('index')
@@ -58,7 +68,7 @@ def index(request):
 @require_POST
 def search_users(request):
     query = request.POST.get('query')
-    if not query or len(query.strip()) < 3:
+    if not query or len(query.strip()) < 1:
         return HttpResponse('')
 
     users = Felhasznalo.objects.filter(felhasznalonev__icontains=query)[:5]
@@ -80,12 +90,69 @@ def user_info(request, user_id = None):
     else:
         user = request.user
 
-    return render(request, 'user_info.html', {
-        'time': datetime.now(),
-        'user': user,
-        'readonly': user != request.user
-    })
+    same_user = user.id == request.user.id
 
+    status = KapcsolatStatus.NONE
+
+    if not same_user:
+        from_user = request.user
+        to_user = Felhasznalo.objects.get(id=user.id)
+        kapcsolat = FelhasznaloKapcsolat.objects.filter(jelolo=from_user, jelolt=to_user).first()
+        if kapcsolat:
+            status = from_string(kapcsolat.statusz)
+
+    if request.method == 'POST':
+        if "change-profile-pic" in request.POST:
+            if not same_user:
+                return redirect('user_info', user_id=user.id)
+
+            img = request.FILES.get('image')
+            file_format_error = False
+            error = False
+            success = False
+
+            if img:
+                response, file_name = image_service.create_image(img, "profile")
+                if response == ImageCreationResponse.NOT_SUPPORTED_FILE_FORMAT:
+                    file_format_error = True
+                elif response == ImageCreationResponse.ERROR:
+                    error = True
+                elif response == ImageCreationResponse.SUCCESS:
+                    user.profil_kep = file_name
+                    user.save(update_fields=['profil_kep'])
+                    success = True
+
+            return render(request, 'user_info.html', {
+                'user': user,
+                'readonly': user != request.user,
+                'file_format_error': file_format_error,
+                'error': error,
+                'success': success
+            })
+        elif "add_user" in request.POST:
+            added = False
+
+            if not same_user:
+                from_user = request.user
+                to_user = Felhasznalo.objects.get(id=user.id)
+                kapcsolat = FelhasznaloKapcsolat.objects.get_or_create(jelolo=from_user, jelolt=to_user, statusz=KapcsolatStatus.PENDING.name.lower())
+                if kapcsolat:
+                    status = from_string(kapcsolat[0].statusz)
+                    added = True
+
+
+            return render(request, 'user_info.html', {
+                'user': user,
+                'readonly': user != request.user,
+                'added': added,
+                'status': status.name
+            })
+
+    return render(request, 'user_info.html', {
+        'user': user,
+        'readonly': user != request.user,
+        'status': status.name,
+    })
 
 def register(request):
     if request.method == 'POST':

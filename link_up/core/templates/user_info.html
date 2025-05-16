@@ -1,5 +1,6 @@
 {% extends 'base/base.html' %}
 {% load static %}
+{% load extra_tags %}
 
 {% block title %}User Information{% endblock %}
 
@@ -11,7 +12,7 @@
             <div class="card p-4 bg-light-gray" style="width: 60%; border-radius: 10px;">
                 <div class="d-flex justify-content-between">
                     <div class="text-start">
-                        <img src="{% static 'profile.png' %}" alt="Profilkép" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
+                        <img src="{% static user|profile_kep_relative_path_or_default %}" alt="Profilkép" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
                     </div>
                     <div>
                         <h3 class="badge bg-success text-wrap">{{ user.felhasznalonev }}</h3>
@@ -32,13 +33,56 @@
                 </div>
                 {% if readonly %}
                     <div class="mt-4 p-3" style="border: 2px solid #D0D0D0FF; border-radius: 10px;">
-                        <form method="post">
-                            {% csrf_token %}
-                            <button type="submit" name="action" value="add_user" class="btn btn-success w-100">Ismerősnek jelölés</button>
-                        </form>
-                    </div>  
+                        {% if status == 'NONE' %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <button type="submit" name="add_user" value="add_user" class="btn btn-success w-100">Ismerősnek jelölés</button>
+                            </form>
+                            {% if added %}
+                                <div class="alert alert-success mt-3" role="alert">
+                                    Sikeres ismerősnek jelölés!
+                                </div>
+                            {% elif added == False %}
+                                <div class="alert alert-danger mt-3" role="alert">
+                                    Hiba történt, kérjük próbálkozzon újra később!
+                                </div>
+                            {% endif %}
+                        {% elif status == 'PENDING' %}
+                            <div class="alert alert-warning mt-3" role="alert">
+                                A jelenlegi jelölés folyamatban van!
+                            </div>
+                        {% elif status == 'ACCEPTED' %}
+                            <div class="alert alert-success mt-3" role="alert">
+                                Ismerősök vagytok!
+                            </div>
+                        {% elif status == 'REJECTED' %}
+                            <div class="alert alert-danger mt-3" role="alert">
+                                Sajnos a felhasználó visszautasította a jelölést!
+                            </div>
+                        {% endif %}
+                    </div>
                 {% else %}
                     <div class="mt-4 p-3" style="border: 2px solid #D0D0D0FF; border-radius: 10px;">
+                        <div class="mt-4 p-3" style="border: 2px solid #D0D0D0FF; border-radius: 10px;">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input required type="file" accept="image/*" name="image" class="rounded bg-dark-gray border-0 my-auto w-50 file" style="height: 40px;" >
+                                <button type="submit" name="change-profile-pic" class="btn btn-success my-auto" style="height: 40px;">Profilkép megválasztása</button>
+                                {% if file_format_error %}
+                                    <div class="alert alert-danger mt-3" role="alert">
+                                        Nem támogatott fájl formátum, kérjük az alxbbiak közul vállasszon: jpg, jpeg, png, gif
+                                    </div>
+                                {% elif error %}
+                                    <div class="alert alert-danger mt-3" role="alert">
+                                        Hiba történt, kérjük próbálkozzon újra később!
+                                    </div>
+                                {% elif success %}
+                                    <div class="alert alert-success mt-3" role="alert">
+                                        Profilkép sikeresen megváltoztatva!
+                                    </div>
+                                {% endif %}
+                            </form>
+                        </div>
                         <form method="post">
                             {% csrf_token %}
                             <label class="form-label fw-bold">Felhasználónév megváltoztatása:</label>

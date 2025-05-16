@@ -1,11 +1,9 @@
-import os
-import uuid
 from datetime import datetime
-from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect, get_object_or_404
+from core.enums import ImageCreationResponse
 from core.models import Felhasznalo, Bejegyzes, Csoport, Komment, Uzenet
+from core.service import image_service
 from core.utils import none_or_invalid, none_or_empty
-from link_up import settings
 
 
 def bejegyzes_list(request):
@@ -58,21 +56,11 @@ def bejegyzes(request, pk=None):
 
         uj_fajlnev = None
         if feltoltott_kep:
-            allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif']
-            kiterjesztes = os.path.splitext(feltoltott_kep.name)[1].lower()
-            if kiterjesztes not in allowed_extensions:
-                errors.append('Nem támogatott képformátum.')
-            else:
-                kep_uuid = str(uuid.uuid4())
-                uj_fajlnev = f"{kep_uuid}{kiterjesztes}"
-                cel_utvonal = os.path.join('static', 'img', uj_fajlnev)
-
-                file_content = ContentFile(feltoltott_kep.read())
-                full_path = os.path.join(settings.BASE_DIR, "core", cel_utvonal)
-
-                os.makedirs(os.path.dirname(full_path), exist_ok=True)
-                with open(full_path, 'wb') as destination:
-                    destination.write(file_content.read())
+            response, uj_fajlnev = image_service.create_image(feltoltott_kep, 'post')
+            if response == ImageCreationResponse.ERROR:
+                errors.append('Kép feltöltése sikertelen.')
+            elif response == ImageCreationResponse.NOT_SUPPORTED_FILE_FORMAT:
+                errors.append('Nem megengedett kiterjesztés.')
         else:
             errors.append('Kép megadása kötelező.')
 
