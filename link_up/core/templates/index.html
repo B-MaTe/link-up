@@ -88,7 +88,7 @@
                     </div>
                 </div>
                 {% endfor %}
-                <div class="d-flex justify-content-center">
+                <div class="mt-4 d-flex justify-content-center">
                     {% if page %}
                         <ul class="pagination">
                             {% if page.has_previous %}
@@ -114,7 +114,9 @@
                         <div class="col-12 mx-auto">
                             <p class="w-100 text-center user-text">Ismerősök</p>
                         </div>
-                        Ide kell majd az ismerosoket felsorolni
+                        <div class="col-12">
+                            {% include 'partial/user_list.html' with users=friends %}
+                        </div>
                     </div>
                 </div>
             </div>

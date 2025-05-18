@@ -5,7 +5,8 @@ CREATE TABLE Felhasznalok (
     jelszo VARCHAR2(128) NOT NULL,
     admin NUMBER(1) CHECK (admin IN (0, 1)),
     utolso_bejelentkezes TIMESTAMP,
-    csatlakozas_ido TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    csatlakozas_ido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    profil_kep VARCHAR2(128)
 );
 
 -- Kapcsolatok
