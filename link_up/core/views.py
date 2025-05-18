@@ -57,7 +57,8 @@ def index(request):
         page.page_range = range(1, page.total_pages + 2)
         page.next = min(page.current + 1, page.total_pages + 1)
         page.previous = max(page.current - 1, 1)
-        posts = Bejegyzes.objects.all().prefetch_related('kommentek').order_by('-id')[(page.current - 1) * page.size:(page.current + 1) * page.size]
+        posts = Bejegyzes.objects.all().prefetch_related('kommentek').order_by('-id')[
+                (page.current - 1) * page.size:(page.current + 1) * page.size]
 
         return render(request, 'index.html', {'posts': posts, 'page': page, 'friends': friends})
 
@@ -99,6 +100,7 @@ def add_comment(request):
             return HttpResponse({'error': True})
 
         return HttpResponse({'success': True})
+
 
 @require_POST
 def search_users(request):
@@ -268,6 +270,7 @@ def kommentek_for_bejegyzes(request):
     bejegyzes = Bejegyzes.objects.get(id=bejegyzes_id)
     return render(request, 'partial/comments.html', {'comments': bejegyzes.kommentek.all().order_by('-id')})
 
+
 def health(request):
     try:
         with connection.cursor() as cursor:
@@ -363,6 +366,7 @@ def all_message(request):
 from django.db.models import Count
 from .models import Csoport, FelhasznaloCsoport, Uzenet, Felhasznalo
 
+
 @login_required
 def new_message(request):
     if request.method == "GET":
@@ -392,24 +396,31 @@ def new_message(request):
 
         # 3. Ha nem találtunk, új privát csoportot hozunk létre
         if not letezo_csoport:
-            letezo_csoport = Csoport.objects.create(privat_beszelgetes=1)
+            letezo_csoport = Csoport.objects.create(
+                privat_beszelgetes=True,
+                csoport_nev=request.user.felhasznalonev + "-" + friend.felhasznalonev,
+                letrehozas_ido=datetime.datetime.now(),
+                felhasznalo=request.user,
+            )
             FelhasznaloCsoport.objects.bulk_create([
                 FelhasznaloCsoport(csoport=letezo_csoport, felhasznalo=request.user),
                 FelhasznaloCsoport(csoport=letezo_csoport, felhasznalo=friend),
             ])
 
         # 4. Üzenet létrehozása
-        Uzenet.objects.create(
+        new_message = Uzenet.objects.create(
             felhasznalo=request.user,
             csoport=letezo_csoport,
+            kuldesi_ido=datetime.datetime.now(),
             tartalom=message
         )
-
-        return redirect("messages:index")
+        new_message.save()
+        return redirect("message", group_id=letezo_csoport.id)
 
 
 @login_required()
 def message(request, group_id):
-    group = get_object_or_404(Csoport, id=group_id)
-    all_messages = group.get_messages()
-    return render(request, "messages/conversation.html", {"all_messages": all_messages})
+    if request.method == "GET":
+        group = get_object_or_404(Csoport, id=group_id)
+        all_messages = group.get_messages()
+        return render(request, "messages/conversation.html", {"messages": all_messages})

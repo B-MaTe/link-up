@@ -48,7 +48,7 @@ class Csoport(models.Model):
         return Uzenet.objects.filter(csoport=self).order_by('-kuldesi_ido').first()
 
     def get_messages(self):
-        return Uzenet.objects.filter(csoport=self).order_by('kuldesi_ido')
+        return Uzenet.objects.filter(csoport=self).order_by('kuldesi_ido').all()
 
 
 class FelhasznaloCsoport(models.Model):

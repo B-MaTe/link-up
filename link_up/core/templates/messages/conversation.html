@@ -26,6 +26,12 @@
             </div>
         {% endif %}
     {% endfor %}
+    <div class="mb-3">
+        <form action="">
+            <label for="exampleFormControlTextarea1" class="form-label">Új üzenet</label>
+            <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+        </form>
+    </div>
 {% endblock %}
 {% block scripts %}
     <script>
