@@ -1,0 +1,15 @@
+{% load static %}
+{% load extra_tags %}
+
+<div class="card p-3 bg-dark-gray w-100 rounded border-0">
+    {% for comment in comments %}
+        <div class="bg-light-gray rounded mt-3 p-2 d-flex flex-row align-items-center gap-2">
+            <img src="{% static comment.felhasznalo|profile_kep_relative_path_or_default %}" alt="Profilkép" class="rounded-circle ratio-1x1" height="50" width="50">
+            <div>
+                <p class="my-auto"><a class="user-text" href="{% url 'user_info' comment.felhasznalo.id %}">{{ comment.felhasznalo.felhasznalonev }}</a></p>
+                <p class="text-muted">{{ comment.feltoltesi_ido|date:"Y-m-d H:i:s" }}</p>
+                <p class="fw-bold">{{ comment.tartalom }}</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.enums import BejegyzesResponse, ImageCreationResponse
+from core.enums import BejegyzesResponse, ImageCreationResponse, UzenetResponse
 from core.models import Bejegyzes
 from core.service import image_service
 from core.service.profanity_service import has_profanity
@@ -28,3 +28,17 @@ def create_bejegyzes(request, text, image=None) -> BejegyzesResponse:
         return BejegyzesResponse.ERROR
 
     return BejegyzesResponse.SUCCESS
+
+
+def add_komment(bejegyzes, user, text):
+    profanity = has_profanity(text)
+
+    if profanity:
+        return UzenetResponse.PROFANITY
+
+    try:
+        bejegyzes.kommentek.create(felhasznalo=user, tartalom=text, feltoltesi_ido=datetime.now())
+    except Exception:
+        return UzenetResponse.ERROR
+
+    return UzenetResponse.SUCCESS
