@@ -5,6 +5,7 @@
             {% if user.is_authenticated %}
                 <li class="nav-item"><a href="{% url 'user_info' %}" class="nav-link">Profil</a></li>
                 <li class="nav-item"><a href="{% url 'csoportok' %}" class="nav-link">Csoportok</a></li>
+                <li class="nav-item"><a href="{% url 'all_messages' %}" class="nav-link">Üzenetek</a></li>
             {% else %}
                 <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Bejelentkezés</a></li>
                 <li class="nav-item"><a href="{% url 'register' %}" class="nav-link">Regisztráció</a></li>

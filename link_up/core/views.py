@@ -3,8 +3,8 @@ import datetime
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.db.models import Q
-from django.shortcuts import render, redirect
+from django.db.models import Q, Count
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 
@@ -57,7 +57,8 @@ def index(request):
         page.page_range = range(1, page.total_pages + 2)
         page.next = min(page.current + 1, page.total_pages + 1)
         page.previous = max(page.current - 1, 1)
-        posts = Bejegyzes.objects.all().prefetch_related('kommentek').order_by('-id')[(page.current - 1) * page.size:(page.current + 1) * page.size]
+        posts = Bejegyzes.objects.all().prefetch_related('kommentek').order_by('-id')[
+                (page.current - 1) * page.size:(page.current + 1) * page.size]
 
         return render(request, 'index.html', {'posts': posts, 'page': page, 'friends': friends})
 
@@ -81,6 +82,10 @@ def index(request):
                 return render(request, 'index.html', {'error': True, 'data': data, 'friends': friends})
 
             return redirect('index')
+        elif "delete-post" in request.POST:
+            post_id = request.POST.get('post-id')
+            Bejegyzes.objects.filter(id=post_id).delete()
+            return redirect('index')
 
     return render(request, 'index.html', {'data': data, 'friends': friends})
 
@@ -99,6 +104,7 @@ def add_comment(request):
             return HttpResponse({'error': True})
 
         return HttpResponse({'success': True})
+
 
 @require_POST
 def search_users(request):
@@ -268,6 +274,7 @@ def kommentek_for_bejegyzes(request):
     bejegyzes = Bejegyzes.objects.get(id=bejegyzes_id)
     return render(request, 'partial/comments.html', {'comments': bejegyzes.kommentek.all().order_by('-id')})
 
+
 def health(request):
     try:
         with connection.cursor() as cursor:
@@ -282,7 +289,7 @@ def health(request):
 
     html_content = f"""
     <html>
-    <head><title>Health Check</title></head>
+    <head><title>Health Check</title></head>F
     <body>
         <h1>Health Check</h1>
         <p>{status}</p>
@@ -389,3 +396,87 @@ def csoportok_view(request):
         'jelenlegi_csoport_id': jelenlegi_csoport_id,
         'jelenlegi_kuldo_id': request.user.id
     })
+
+
+def all_message(request):
+    csoport_ids = FelhasznaloCsoport.objects.filter(felhasznalo=request.user).values_list("csoport_id", flat=True)
+    # 2. Olyan csoportot keresünk ezek közül, ami privát,
+    csoportok = (
+        Csoport.objects
+        .filter(id__in=csoport_ids, privat_beszelgetes=1)
+        .all()
+    )
+    return render(request, "messages/all_message.html", {"conversations": csoportok})
+
+
+from django.db.models import Count
+from .models import Csoport, FelhasznaloCsoport, Uzenet, Felhasznalo
+
+
+@login_required
+def new_message(request):
+    if request.method == "GET":
+        friends = request.user.get_friends()
+        return render(request, "messages/new_message.html", {"friends": friends})
+
+    if request.method == "POST":
+        friend_id = request.POST.get("friend_id")
+        message = request.POST.get("message")
+
+        if not friend_id or not message:
+            raise ValueError("Hiányzó adatok!")
+
+        friend = get_object_or_404(Felhasznalo, id=friend_id)
+
+        # 1. Keressük meg az összes privát csoportot, amiben az aktuális felhasználó benne van
+        csoport_ids = FelhasznaloCsoport.objects.filter(felhasznalo=request.user).values_list("csoport_id", flat=True)
+
+        # 2. Olyan csoportot keresünk ezek közül, ami privát, a barát is benne van, és pontosan 2 tagja van
+        letezo_csoport = (
+            Csoport.objects
+            .filter(id__in=csoport_ids, privat_beszelgetes=1)
+            .filter(felhasznalocsoport__felhasznalo=friend)
+            .first()
+        )
+
+        # 3. Ha nem találtunk, új privát csoportot hozunk létre
+        if not letezo_csoport:
+            letezo_csoport = Csoport.objects.create(
+                privat_beszelgetes=True,
+                csoport_nev=request.user.felhasznalonev + "-" + friend.felhasznalonev,
+                letrehozas_ido=datetime.datetime.now(),
+                felhasznalo=request.user,
+            )
+            FelhasznaloCsoport.objects.bulk_create([
+                FelhasznaloCsoport(csoport=letezo_csoport, felhasznalo=request.user),
+                FelhasznaloCsoport(csoport=letezo_csoport, felhasznalo=friend),
+            ])
+
+        # 4. Üzenet létrehozása
+        new_message = Uzenet.objects.create(
+            felhasznalo=request.user,
+            csoport=letezo_csoport,
+            kuldesi_ido=datetime.datetime.now(),
+            tartalom=message
+        )
+        new_message.save()
+        return redirect("message", group_id=letezo_csoport.id)
+
+
+@login_required()
+def message(request, group_id):
+    if request.method == "GET":
+        group = get_object_or_404(Csoport, id=group_id)
+        all_messages = group.get_messages()
+        return render(request, "messages/conversation.html", {"conversation_id": group_id, "messages": all_messages})
+
+    if request.method == "POST":
+        message = request.POST.get("message")
+        group = get_object_or_404(Csoport, id=group_id)
+        Uzenet.objects.create(
+            felhasznalo=request.user,
+            csoport=group,
+            kuldesi_ido=datetime.datetime.now(),
+            tartalom=message
+        )
+        return redirect("message", group_id=group.id)

@@ -1,0 +1,84 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">📊 Rendszerösszegzés az adminisztrátorok számára</h3>
+        </div>
+        <div class="card-body">
+            <ul class="list-group list-group-flush fs-5">
+                <li class="list-group-item">👨‍💼 Adminisztrátorok száma: <strong>{{ adminok_szama }}</strong></li>
+                <li class="list-group-item">👥 Felhasználók száma: <strong>{{ felhasznalok_szama }}</strong></li>
+                <li class="list-group-item">📚 Csoportok száma: <strong>{{ csoportok_szama }}</strong></li>
+                <li class="list-group-item">📝 Bejegyzések száma: <strong>{{ bejegyzesek_szama }}</strong></li>
+                <li class="list-group-item">💬 Kommentek száma: <strong>{{ kommentek_szama }}</strong></li>
+                <li class="list-group-item">📨 Üzenetek száma: <strong>{{ uzenetek_szama }}</strong></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">🗨️ Legaktívabb kommentelők</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead><tr><th>Felhasználónév</th><th>Kommentek száma</th></tr></thead>
+                <tbody>
+                    {% for nev, szam in komment_aktivitas %}
+                    <tr><td>{{ nev }}</td><td>{{ szam }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0">👥 Csoportok bejegyzésszáma</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead><tr><th>Csoport neve</th><th>Bejegyzések száma</th></tr></thead>
+                <tbody>
+                    {% for nev, szam in csoport_bejegyzesek %}
+                    <tr><td>{{ nev }}</td><td>{{ szam }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0">🔒 Privát beszélgetésben résztvevő felhasználók</h4>
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for felhasznalo in privat_felhasznalok %}
+                <li class="list-group-item">{{ felhasznalo.0 }}</li>
+                {% empty %}
+                <li class="list-group-item">Nincs ilyen felhasználó.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-secondary text-white">
+            <h4 class="mb-0">📏 Átlagos kommenthossz felhasználónként</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead><tr><th>Felhasználónév</th><th>Átlag hossz (karakter)</th></tr></thead>
+                <tbody>
+                    {% for nev, atlag in komment_hossz %}
+                    <tr><td>{{ nev }}</td><td>{{ atlag|floatformat:1 }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
