@@ -41,7 +41,7 @@ class Csoport(models.Model):
 
     def get_other_participants(self):
         return Felhasznalo.objects.filter(
-            felhasznalocssoport__csoport=self
+            felhasznalocsoport__csoport=self
         ).exclude(id=self.felhasznalo_id)
 
     def get_last_message(self):

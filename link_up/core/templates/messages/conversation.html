@@ -5,33 +5,38 @@
 {% block title %}Üzenetek{% endblock %}
 
 {% block content %}
-    {% for message in messages %}
-        {% if message.felhasznalo.id == user.id %}
-            <div class="text-start">
-                <div>
-                    <p class="fw-bold">Én</p>
+    <div class="container">
+        {% for message in messages %}
+            {% if message.felhasznalo.id == user.id %}
+                <div class="text-start">
+                    <div>
+                        <p class="fw-bold">Én</p>
+                    </div>
+                    <div>
+                        {{ message.tartalom }}
+                    </div>
                 </div>
-                <div>
-                    {{ message.tartalom }}
+            {% else %}
+                <div class="text-start">
+                    <div>
+                        <p class="fw-bold">{{ message.felhasznalo.felhasznalonev }}</p>
+                    </div>
+                    <div>
+                        {{ message.tartalom }}
+                    </div>
                 </div>
-            </div>
-        {% else %}
-            <div class="text-start">
-                <div>
-                    <p class="fw-bold">message.felhasznalo.felhasznalonev</p>
-                </div>
-                <div>
-                    {{ message.tartalom }}
-                </div>
-            </div>
-        {% endif %}
-    {% endfor %}
-    <div class="mb-3">
-        <form action="">
-            <label for="exampleFormControlTextarea1" class="form-label">Új üzenet</label>
-            <textarea class="form-control" id="message" name="message" rows="3"></textarea>
-        </form>
+            {% endif %}
+        {% endfor %}
+        <div class="mb-3">
+            <form action="{% url "message" group_id=conversation_id %}" method="POST">
+                {% csrf_token %}
+                <label for="exampleFormControlTextarea1" class="form-label"></label>
+                <textarea class="form-control mb-3" id="message" name="message" rows="3"></textarea>
+                <button class="btn btn-primary">Küldés</button>
+            </form>
+        </div>
     </div>
+
 {% endblock %}
 {% block scripts %}
     <script>

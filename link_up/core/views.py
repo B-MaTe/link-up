@@ -380,7 +380,14 @@ def csoportok_view(request):
 
 
 def all_message(request):
-    return render(request, "messages/all_message.html", {})
+    csoport_ids = FelhasznaloCsoport.objects.filter(felhasznalo=request.user).values_list("csoport_id", flat=True)
+    # 2. Olyan csoportot keresünk ezek közül, ami privát,
+    csoportok = (
+        Csoport.objects
+        .filter(id__in=csoport_ids, privat_beszelgetes=1)
+        .all()
+    )
+    return render(request, "messages/all_message.html", {"conversations": csoportok})
 
 
 from django.db.models import Count
@@ -409,8 +416,7 @@ def new_message(request):
         letezo_csoport = (
             Csoport.objects
             .filter(id__in=csoport_ids, privat_beszelgetes=1)
-            .annotate(tagok_szama=Count("felhasznalocsoport"))
-            .filter(tagok_szama=2, felhasznalocsoport__felhasznalo=friend)
+            .filter(felhasznalocsoport__felhasznalo=friend)
             .first()
         )
 
@@ -443,4 +449,15 @@ def message(request, group_id):
     if request.method == "GET":
         group = get_object_or_404(Csoport, id=group_id)
         all_messages = group.get_messages()
-        return render(request, "messages/conversation.html", {"messages": all_messages})
+        return render(request, "messages/conversation.html", {"conversation_id": group_id, "messages": all_messages})
+
+    if request.method == "POST":
+        message = request.POST.get("message")
+        group = get_object_or_404(Csoport, id=group_id)
+        Uzenet.objects.create(
+            felhasznalo=request.user,
+            csoport=group,
+            kuldesi_ido=datetime.datetime.now(),
+            tartalom=message
+        )
+        return redirect("message", group_id=group.id)
