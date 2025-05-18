@@ -1,0 +1,21 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+    <div class="container py-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Rendszerösszegzés az adminisztrátorok számára</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush fs-5">
+                    <li class="list-group-item">Adminisztrátorok száma: <strong>{{ adminok_szama }}</strong></li>
+                    <li class="list-group-item">Felhasználók száma: <strong>{{ felhasznalok_szama }}</strong></li>
+                    <li class="list-group-item">Csoportok száma: <strong>{{ csoportok_szama }}</strong></li>
+                    <li class="list-group-item">Bejegyzések száma: <strong>{{ bejegyzesek_szama }}</strong></li>
+                    <li class="list-group-item">Kommentek száma: <strong>{{ kommentek_szama }}</strong></li>
+                    <li class="list-group-item">Üzenetek száma: <strong>{{ uzenetek_szama }}</strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
