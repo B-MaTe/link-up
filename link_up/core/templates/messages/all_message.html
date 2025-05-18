@@ -1,0 +1,39 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block title %}Üzenetek{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <a href="{% url "new_message" %}" class="btn btn-secondary col-md-3 mb-3">Új beszélgetés indítása</a>
+        </div>
+
+        <div class="row">
+            {% for conversation in conversations %}
+
+
+                <a href="{% url "message" group_id=conversation.id %}" class="card text-center mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {% for member in conversation.get_other_participants %}
+                                {{ member.felhasznalonev }} - {{ conversation.id }}
+                            {% endfor %}
+                        </h5>
+                        <p class="card-text">{{ conversation.get_last_message.tartalom }}</p>
+                        <div class="text-body-secondary">
+                            {{ conversation.get_last_message.kuldesi_ido }}
+                        </div>
+                    </div>
+
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+
+    </script>
+{% endblock %}

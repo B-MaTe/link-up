@@ -9,6 +9,7 @@ from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.db import connection
+from django.db.models import Q
 from django.utils.timezone import now
 
 
@@ -34,6 +35,17 @@ class Csoport(models.Model):
     class Meta:
         managed = False
         db_table = 'csoportok'
+
+    def get_other_participants(self):
+        return Felhasznalo.objects.filter(
+            felhasznalocsoport__csoport=self
+        ).exclude(id=self.felhasznalo_id)
+
+    def get_last_message(self):
+        return Uzenet.objects.filter(csoport=self).order_by('-kuldesi_ido').first()
+
+    def get_messages(self):
+        return Uzenet.objects.filter(csoport=self).order_by('kuldesi_ido').all()
 
 
 class FelhasznaloCsoport(models.Model):
@@ -113,6 +125,20 @@ class Felhasznalo(AbstractBaseUser, PermissionsMixin):
     @property
     def is_active(self):
         return True
+
+    def get_friends(self):
+        accepted_kapcsolatok = FelhasznaloKapcsolat.objects.filter(
+            Q(jelolo=self) | Q(jelolt=self),
+            statusz='accepted'
+        )
+
+        friends = []
+        for kapcsolat in accepted_kapcsolatok:
+            if kapcsolat.jelolo == self:
+                friends.append(kapcsolat.jelolt)
+            else:
+                friends.append(kapcsolat.jelolo)
+        return friends
 
     def __str__(self):
         return self.felhasznalonev
