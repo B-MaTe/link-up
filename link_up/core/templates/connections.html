@@ -1,0 +1,130 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block title %}Jelölések{% endblock %}
+
+{% block content %}
+<div class="container mt-5 main-content">
+    <div class="row justify-content-center">
+        <h2 class="mb-5">Jelölések</h2>
+    </div>
+
+    {% if message %}
+        <div class="col-12">
+            <div class="alert" role="alert">
+                {{ message }}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-6 col-sm-12 ">
+            <div class="card p-4 bg-light-gray rounded w-100">
+                <div class="d-flex justify-content-between flex-column gap-2">
+                    <h4>Függőben lévő jelöléseim</h4>
+                    <ul class="list-group">
+                        {% for row in pending_from_user %}
+                            <li class="list-group-item">
+                                <div class="row">
+                                <div class="col-3 my-auto">
+                                    <img src="{% static row.jelolt|profile_kep_relative_path_or_default %}" alt="{{ row.jelolt.felhasznalonev }} profilkep" class="rounded-circle ratio-1x1 w-100">
+                                </div>
+                                    <a class="user-text col-9 my-auto" href="{% url 'user_info' row.jelolt.id %}">{{ row.jelolt.felhasznalonev }}</a>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Nincs találat.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12 ">
+            <div class="card p-4 bg-light-gray rounded w-100">
+                <div class="d-flex justify-content-between flex-column gap-2">
+                    <h4>Függőben lévő jelölések felém</h4>
+                    <ul class="list-group">
+                        {% for row in pending_to_user %}
+                            <form method="post">
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col-3 my-auto">
+                                            <img src="{% static row.jelolo|profile_kep_relative_path_or_default %}" alt="{{ row.jelolo.felhasznalonev }} profilkep" class="rounded-circle ratio-1x1 w-100">
+                                        </div>
+                                        <a class="user-text col-5 my-auto" href="{% url 'user_info' row.jelolo.id %}">{{ row.jelolo.felhasznalonev }}</a>
+    
+                                            {% csrf_token %}
+                                            <div class="col-2 my-auto">
+                                                <i class="bi bi-check fs-2" onclick="send(event, 'accept')" style="cursor: pointer"></i>
+                                            </div>
+                                            <div class="col-2 my-auto">
+                                                <i class="bi bi-x fs-2" onclick="send(event, 'reject')" style="cursor: pointer"></i>
+                                            </div>
+                                            <input type="hidden" name="action" value="">
+                                            <input type="hidden" name="affected_id" value="{{ row.jelolo.id }}">
+                                    </div>
+                                </li>
+                            </form>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Nincs találat.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12 mt-4">
+            <div class="card p-4 bg-light-gray rounded w-100">
+                <div class="d-flex justify-content-between flex-column gap-2">
+                    <h4>Visszautasított jelölések</h4>
+                    <ul class="list-group">
+                        {% for row in rejected_from_user %}
+                            <li class="list-group-item">
+                                <div class="row">
+                                <div class="col-3 my-auto">
+                                    <img src="{% static row.jelolt|profile_kep_relative_path_or_default %}" alt="{{ row.jelolt.felhasznalonev }} profilkep" class="rounded-circle ratio-1x1 w-100">
+                                </div>
+                                    <a class="user-text col-9 my-auto" href="{% url 'user_info' row.jelolt.id %}">{{ row.jelolt.felhasznalonev }}</a>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Nincs találat.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12 mt-4">
+            <div class="card p-4 bg-light-gray rounded w-100">
+                <div class="d-flex justify-content-between flex-column gap-2">
+                    <h4>Visszautasított jelöléseim</h4>
+                    <ul class="list-group">
+                        {% for row in rejected_to_user %}
+                            <li class="list-group-item">
+                                <div class="row">
+                                <div class="col-3 my-auto">
+                                    <img src="{% static row.jelolt|profile_kep_relative_path_or_default %}" alt="{{ row.jelolt.felhasznalonev }} profilkep" class="rounded-circle ratio-1x1 w-100">
+                                </div>
+                                    <a class="user-text col-9 my-auto" href="{% url 'user_info' row.jelolt.id %}">{{ row.jelolt.felhasznalonev }}</a>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">Nincs találat.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        function send(event, action) {
+            event.preventDefault();
+            const form = event.target.closest('form');
+            form.querySelector('input[name="action"]').value = action;
+            form.submit();
+        }
+    </script>
+{% endblock %}

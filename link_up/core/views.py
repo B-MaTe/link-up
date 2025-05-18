@@ -1,6 +1,7 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
@@ -28,6 +29,17 @@ class CustomLoginView(LoginView):
 
 def index(request):
     data = {}
+    friends = []
+
+    if request.user.is_authenticated:
+        all = FelhasznaloKapcsolat.objects.filter(Q(Q(jelolo=request.user) | Q(jelolt=request.user)) & Q(statusz=KapcsolatStatus.ACCEPTED.name.lower()))
+
+        for kapcsolat in all:
+            if kapcsolat.jelolo == request.user:
+                friends.append(SearchUser(kapcsolat.jelolt.id, kapcsolat.jelolt.felhasznalonev, kapcsolat.jelolt.profil_kep))
+            else:
+                friends.append(SearchUser(kapcsolat.jelolo.id, kapcsolat.jelolo.felhasznalonev, kapcsolat.jelolo.profil_kep))
+
 
     if request.method == 'GET':
         page: Page = Page(1, 5, 1, False, False)
@@ -35,11 +47,13 @@ def index(request):
         count_pages = Bejegyzes.objects.all().count()
         page.total_pages = count_pages // page.size
         page.has_next = count_pages > page.current * page.size
-        page.has_previous = page.current > 0
-        page.page_range = range(1, page.total_pages)
-        posts = Bejegyzes.objects.all().order_by('-id')[page.current * page.size:(page.current + 1) * page.size]
+        page.has_previous = page.current > 1
+        page.page_range = range(1, page.total_pages + 2)
+        page.next = min(page.current + 1, page.total_pages + 1)
+        page.previous = max(page.current - 1, 1)
+        posts = Bejegyzes.objects.all().order_by('-id')[(page.current - 1) * page.size:(page.current + 1) * page.size]
 
-        return render(request, 'index.html', {'posts': posts, 'page': page})
+        return render(request, 'index.html', {'posts': posts, 'page': page, 'friends': friends})
 
     if request.method == 'POST':
         if "add-post" in request.POST:
@@ -52,17 +66,17 @@ def index(request):
             result = bejegyzes_service.create_bejegyzes(request, text, img)
 
             if result == BejegyzesResponse.PROFANITY:
-                return render(request, 'index.html', {'profanity': True, 'data': data})
+                return render(request, 'index.html', {'profanity': True, 'data': data, 'friends': friends})
 
             if result == BejegyzesResponse.FILE_FORMAT_ERROR:
-                return render(request, 'index.html', {'file_format_error': True, 'data': data})
+                return render(request, 'index.html', {'file_format_error': True, 'data': data, 'friends': friends})
 
             if result == BejegyzesResponse.ERROR:
-                return render(request, 'index.html', {'error': True, 'data': data})
+                return render(request, 'index.html', {'error': True, 'data': data, 'friends': friends})
 
             return redirect('index')
 
-    return render(request, 'index.html')
+    return render(request, 'index.html', {'data': data, 'friends': friends})
 
 
 @require_POST
@@ -71,7 +85,7 @@ def search_users(request):
     if not query or len(query.strip()) < 1:
         return HttpResponse('')
 
-    users = Felhasznalo.objects.filter(felhasznalonev__icontains=query)[:5]
+    users = Felhasznalo.objects.filter(felhasznalonev__icontains=query)[:15]
 
     prepared_users = []
     for user in users:
@@ -97,7 +111,7 @@ def user_info(request, user_id = None):
     if not same_user:
         from_user = request.user
         to_user = Felhasznalo.objects.get(id=user.id)
-        kapcsolat = FelhasznaloKapcsolat.objects.filter(jelolo=from_user, jelolt=to_user).first()
+        kapcsolat = FelhasznaloKapcsolat.objects.filter(Q(jelolo=from_user, jelolt=to_user) | Q(jelolo=to_user, jelolt=from_user)).first()
         if kapcsolat:
             status = from_string(kapcsolat.statusz)
 
@@ -147,11 +161,69 @@ def user_info(request, user_id = None):
                 'added': added,
                 'status': status.name
             })
+        elif "change_username" in request.POST:
+            if not same_user:
+                return redirect('user_info', user_id=user.id)
+
+            new_username = request.POST.get('new_username')
+            existing_user = Felhasznalo.objects.filter(felhasznalonev=new_username).first()
+            if existing_user:
+                return render(request, 'user_info.html', {
+                    'user': user,
+                    'readonly': user != request.user,
+                    'user_exists': True
+                })
+
+            user.felhasznalonev = new_username
+            user.save(update_fields=['felhasznalonev'])
+            return render(request, 'user_info.html', {
+                'user': user,
+                'readonly': user != request.user,
+                'user_exists': False,
+                'username_updated': True
+            })
+        elif "delete_profile" in request.POST:
+            if not same_user:
+                return redirect('user_info', user_id=user.id)
+            user.delete()
+            return redirect('index')
+
 
     return render(request, 'user_info.html', {
         'user': user,
         'readonly': user != request.user,
         'status': status.name,
+    })
+
+
+def connections(request):
+    message = None
+
+    if request.method == 'POST':
+        affected_id = request.POST.get('affected_id')
+        action = request.POST.get('action')
+        kapcsolat = FelhasznaloKapcsolat.objects.get(jelolo_id=affected_id, jelolt_id=request.user.id)
+        if "accept" == action:
+            kapcsolat.statusz = KapcsolatStatus.ACCEPTED.name.lower()
+            kapcsolat.save(update_fields=['statusz'])
+            message = "Jelölés sikeresen elfogadva! Mostmár ismerősök vagytok"
+        elif "reject" == action:
+            kapcsolat.statusz = KapcsolatStatus.REJECTED.name.lower()
+            kapcsolat.save(update_fields=['statusz'])
+            message = "Jelölés sikeresen elutasítva!"
+
+
+    pending_from_user = FelhasznaloKapcsolat.objects.filter(jelolo=request.user, statusz=KapcsolatStatus.PENDING.name.lower())
+    pending_to_user = FelhasznaloKapcsolat.objects.filter(jelolt=request.user, statusz=KapcsolatStatus.PENDING.name.lower())
+    rejected_from_user = FelhasznaloKapcsolat.objects.filter(jelolo=request.user, statusz=KapcsolatStatus.REJECTED.name.lower())
+    rejected_to_user = FelhasznaloKapcsolat.objects.filter(jelolt=request.user, statusz=KapcsolatStatus.REJECTED.name.lower())
+
+    return render(request, 'connections.html', {
+        'pending_from_user': pending_from_user,
+        'pending_to_user': pending_to_user,
+        'rejected_from_user': rejected_from_user,
+        'rejected_to_user': rejected_to_user,
+        'message': message
     })
 
 def register(request):

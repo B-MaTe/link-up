@@ -14,10 +14,13 @@
         </ul>
 
         {% if user.is_authenticated %}
-        <form method="POST" action="{% url 'logout' %}" class="logout-form">
-            {% csrf_token %}
-            <button type="submit" class="logout-button">Kijelentkezés</button>
-        </form>
+        <ul class="nav-list">
+            <li class="nav-item"><a href="{% url 'connections' %}" class="nav-link"><i class="bi bi-person"></i></a></li>
+            <form method="POST" action="{% url 'logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">Kijelentkezés</button>
+            </form>
+        </ul>
         {% endif %}
     </nav>
 </header>

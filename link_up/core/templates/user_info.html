@@ -2,7 +2,7 @@
 {% load static %}
 {% load extra_tags %}
 
-{% block title %}User Information{% endblock %}
+{% block title %}Profil{% endblock %}
 
 {% block content %}
 <div class="container mt-5 main-content">
@@ -57,7 +57,7 @@
                             </div>
                         {% elif status == 'REJECTED' %}
                             <div class="alert alert-danger mt-3" role="alert">
-                                Sajnos a felhasználó visszautasította a jelölést!
+                                Jelölés visszautasítva!
                             </div>
                         {% endif %}
                     </div>
@@ -86,16 +86,25 @@
                         <form method="post">
                             {% csrf_token %}
                             <label class="form-label fw-bold">Felhasználónév megváltoztatása:</label>
-                            <input type="text" name="new_username" class="form-control mb-3" placeholder="Új felhasználónév">
-                            <button type="submit" name="action" value="change_username" class="btn btn-success w-100">Elfogadás</button>
+                            <input required type="text" name="new_username" class="form-control mb-3" placeholder="Új felhasználónév">
+                            <button type="submit" name="change_username" value="change_username" class="btn btn-success w-100">Elfogadás</button>
                         </form>
+                        {% if user_exists %}
+                            <div class="alert alert-danger mt-3" role="alert">
+                                A megadott felhasználónév már foglalt!
+                            </div>
+                        {% elif username_updated %}
+                            <div class="alert alert-success mt-3" role="alert">
+                                A felhasználónevét sikeresen megváltoztatva!
+                            </div>
+                        {% endif %}
                     </div>
 
                     <div class="mt-4 p-3 bg-danger bg-opacity-25" style="border-radius: 10px;">
                         <form method="post">
                             {% csrf_token %}
                             <p class="fw-bold">Profil törlése:</p>
-                            <button type="submit" name="action" value="delete_profile" class="btn btn-danger w-100">TÖRLÉS</button>
+                            <button type="submit" name="delete_profile" value="delete_profile" class="btn btn-danger w-100">TÖRLÉS</button>
                         </form>
                     </div>
                 {% endif %}
