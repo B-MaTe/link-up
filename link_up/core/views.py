@@ -14,7 +14,8 @@ from django.http import HttpResponse
 
 from .models import Felhasznalo, Bejegyzes, FelhasznaloKapcsolat, Csoport, FelhasznaloCsoport
 from .service import bejegyzes_service, image_service
-from core.enums import BejegyzesResponse, ImageCreationResponse, KapcsolatStatus, from_string
+from core.enums import BejegyzesResponse, ImageCreationResponse, KapcsolatStatus, from_string, UzenetResponse
+from .service.bejegyzes_service import add_komment
 
 
 class CustomLoginView(LoginView):
@@ -51,7 +52,7 @@ def index(request):
         page.page_range = range(1, page.total_pages + 2)
         page.next = min(page.current + 1, page.total_pages + 1)
         page.previous = max(page.current - 1, 1)
-        posts = Bejegyzes.objects.all().order_by('-id')[(page.current - 1) * page.size:(page.current + 1) * page.size]
+        posts = Bejegyzes.objects.all().prefetch_related('kommentek').order_by('-id')[(page.current - 1) * page.size:(page.current + 1) * page.size]
 
         return render(request, 'index.html', {'posts': posts, 'page': page, 'friends': friends})
 
@@ -78,6 +79,21 @@ def index(request):
 
     return render(request, 'index.html', {'data': data, 'friends': friends})
 
+
+def add_comment(request):
+    if request.method == 'POST':
+        post_id = request.POST.get('post_id')
+        comment = request.POST.get('comment')
+
+        response = add_komment(Bejegyzes.objects.get(id=post_id), request.user, comment)
+
+        if response == UzenetResponse.PROFANITY:
+            return HttpResponse({'profanity': True})
+
+        if response == UzenetResponse.ERROR:
+            return HttpResponse({'error': True})
+
+        return HttpResponse({'success': True})
 
 @require_POST
 def search_users(request):
@@ -237,6 +253,11 @@ def register(request):
         form = CustomRegisterForm()
     return render(request, 'registration/register.html', {'form': form})
 
+
+def kommentek_for_bejegyzes(request):
+    bejegyzes_id = request.GET.get('bejegyzes_id')
+    bejegyzes = Bejegyzes.objects.get(id=bejegyzes_id)
+    return render(request, 'partial/comments.html', {'comments': bejegyzes.kommentek.all().order_by('-id')})
 
 def health(request):
     try:

@@ -66,25 +66,42 @@
             </div>
             <div class="col-lg-9 col-md-9 col-sm-12">
                 {% for post in posts %}
-                <div class="mt-4 card p-4 bg-dark-gray w-100 rounded d-flex flex-row align-items-center gap-2">
-                    <div style="width: 75%;">
-                        <div class="d-flex flex-row align-items-center gap-2 rounded bg-light-gray p-2" style="max-height: 100px !important;">
-                            <div>
-                                <img src="{% static post.felhasznalo|profile_kep_relative_path_or_default %}" alt="Profilkép" class="rounded-circle ratio-1x1" height="75" width="75">
+                <div class="mt-4 d-flex flex-column card p-4 bg-dark-gray w-100 rounded ">
+                    <div class=" d-flex flex-row align-items-center gap-2">
+                        <div style="width: 75%;">
+                            <div class="d-flex flex-row align-items-center gap-2 rounded bg-light-gray p-2" style="max-height: 100px !important;">
+                                <div>
+                                    <img src="{% static post.felhasznalo|profile_kep_relative_path_or_default %}" alt="Profilkép" class="rounded-circle ratio-1x1" height="75" width="75">
+                                </div>
+                                <div>
+                                    <p class="my-auto"><a class="user-text" href="{% url 'user_info' post.felhasznalo.id %}">{{ post.felhasznalo.felhasznalonev }}</a></p>
+                                    <p class="text-muted">{{ post.letrehozasi_ido|date:"Y-m-d H:i:s" }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="my-auto"><a class="user-text" href="{% url 'user_info' post.felhasznalo.id %}">{{ post.felhasznalo.felhasznalonev }}</a></p>
-                                <p class="text-muted">{{ post.letrehozasi_ido|date:"Y-m-d H:i:s" }}</p>
+                            <div class="bg-light-gray rounded p-2 mt-3">
+                                <p class="fw-bold">{{ post.tartalom }}</p>
                             </div>
                         </div>
-                        <div class="bg-light-gray rounded p-2 mt-3">
-                            <p class="fw-bold">{{ post.tartalom }}</p>
+                        <div style="width: 25%;">
+                            {% if post.feltoltott_kep %}
+                                <img src="{% static post|post_file_relative_path %}" alt="Post" class="rounded w-100 h-100 ratio-1x1" style="max-height: 200px !important;">
+                            {% endif %}
                         </div>
                     </div>
-                    <div style="width: 25%;">
-                        {% if post.feltoltott_kep %}
-                            <img src="{% static post|post_file_relative_path %}" alt="Post" class="rounded w-100 h-100 ratio-1x1" style="max-height: 200px !important;">
-                        {% endif %}
+                    <button type="button" class="mt-5 btn btn-primary mx-auto" onclick="toggleComments(event, {{ post.id }})">Megjegyzések</button>
+                    <div id="comments-{{ post.id }}-container" class="mt-5 d-none" style="width: 100%;">
+                        <hr />
+                        <form method="post" class="d-flex flex-row" id="form-{{ post.id }}">
+                            {% csrf_token %}
+                            <textarea name="comment" id="comment" class="form-control" rows="2" placeholder="Adj hozzá egy megjegyzést" required></textarea>
+                            <input type="submit" name="add-comment" onclick="addComment(event, {{ post.id }})" class="btn btn-success ms-2" value="Megjegyzés">
+                            <div id="response-{{ post.id }}"></div>
+                        </form>
+                        <div class="mt-3">
+                            <div id="comments-{{ post.id }}">
+                                {% include 'partial/comments.html' with comments=post.kommentek.all %}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -124,22 +141,60 @@
     {% endif %}
 {% endblock %}
 {% block scripts %}
-    <script>
-document.getElementById("search-input").addEventListener("input", function(e) {
-    const query = e.target.value;
+<script>
+    document.getElementById("search-input").addEventListener("input", function(e) {
+        const query = e.target.value;
 
-    fetch("{% url 'search_users' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: new URLSearchParams({ query: query })
-    })
-    .then(response => response.text())
-    .then(data => {
-        document.getElementById("search-results").innerHTML = data;
+        fetch("{% url 'search_users' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: new URLSearchParams({ query: query })
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("search-results").innerHTML = data;
+        });
     });
-});
+
+
+    async function addComment(event, post_id) {
+        event.preventDefault();
+        const form = document.getElementById(`form-${post_id}`);
+
+        await fetch("{% url 'add_comment' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: new URLSearchParams({post_id: post_id, comment: form.comment.value})
+        })
+        .then(response => response.text())
+        .then(data => {
+            let inner = '';
+
+            if (data === 'profanity') {
+                inner = '<div class="m-2 alert alert-danger" role="alert">Tiltott szavakat, kifejezéseket használt, kérjük módosítsa!</div>';
+            } else if (data === "error") {
+                inner = '<div class="m-2 alert alert-danger" role="alert">Hiba történt, kérjük próbálkozzon újra később!</div>';
+            } else if (data === "success") {
+                inner = '<div class="m-2 alert alert-success" role="alert">Megjegyzés sikeresen hozzáadva!</div>';
+            }
+
+            document.getElementById(`response-${post_id}`).innerHTML = inner;
+        });
+
+
+        document.getElementById(`comments-${post_id}`).innerHTML = await fetch("{% url 'kommentek_for_bejegyzes' %}?bejegyzes_id=" + post_id, { method: "GET" }).then(response => response.text());
+    }
+
+
+    function toggleComments(event, post_id) {
+        event.preventDefault();
+        document.getElementById(`comments-${post_id}-container`).classList.toggle("d-none");
+    }
 </script>
 {% endblock %}

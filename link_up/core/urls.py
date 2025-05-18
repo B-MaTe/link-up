@@ -14,6 +14,8 @@ urlpatterns = [
     path('connections/', views.connections, name='connections'),
     path('health/', views.health, name='health'),
     path('search_users/', views.search_users, name='search_users'),
+    path('add_comment/', views.add_comment, name='add_comment'),
+    path('kommentek', views.kommentek_for_bejegyzes, name='kommentek_for_bejegyzes'),
     path('csoportok/', views.csoportok_view, name='csoportok')
 
 ]

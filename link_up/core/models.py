@@ -132,7 +132,7 @@ class Felhasznalo(AbstractBaseUser, PermissionsMixin):
 class Komment(models.Model):
     id = models.AutoField(primary_key=True)
     felhasznalo = models.ForeignKey(Felhasznalo, models.DO_NOTHING, blank=True, null=True)
-    bejegyzes = models.ForeignKey(Bejegyzes, models.DO_NOTHING, blank=True, null=True)
+    bejegyzes = models.ForeignKey(Bejegyzes, models.DO_NOTHING, blank=True, null=True, related_name='kommentek')
     feltoltesi_ido = models.DateTimeField(blank=True, null=True)
     tartalom = models.CharField(max_length=1000, blank=True, null=True)
 
