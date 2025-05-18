@@ -19,5 +19,6 @@ urlpatterns = [
     path('message/new', views.new_message, name='new_message'),
     path('add_comment/', views.add_comment, name='add_comment'),
     path('kommentek', views.kommentek_for_bejegyzes, name='kommentek_for_bejegyzes'),
+    path('csoportok/', views.csoportok_view, name='csoportok'),
     path('message/<int:group_id>/', views.message, name='message'),
 ]
