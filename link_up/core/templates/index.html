@@ -88,7 +88,16 @@
                             {% endif %}
                         </div>
                     </div>
-                    <button type="button" class="mt-5 btn btn-primary mx-auto" onclick="toggleComments(event, {{ post.id }})">Megjegyzések</button>
+                    <div class="d-flex flex-row">
+                        <button type="button" class="mt-5 me-5 btn btn-primary mx-auto w-75" onclick="toggleComments(event, {{ post.id }})">Megjegyzések</button>
+                        {% if user.is_superuser or user.id == post.felhasznalo.id %}
+                        <form method="post" class="mt-5 ms-5 w-25">
+                            {% csrf_token %}
+                            <input type="hidden" name="post-id" value="{{ post.id }}">
+                            <button type="submit" name="delete-post" class="btn btn-danger">Törlés</button>
+                        </form>
+                        {% endif %}
+                    </div>
                     <div id="comments-{{ post.id }}-container" class="mt-5 d-none" style="width: 100%;">
                         <hr />
                         <form method="post" class="d-flex flex-row" id="form-{{ post.id }}">
