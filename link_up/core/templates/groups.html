@@ -21,13 +21,43 @@
                                 <span class="badge bg-success">Csoportos</span>
                             </p>
                             <a href="#" class="btn btn-primary">Csoport megnyitása</a>
+                            {% if csoport.felhasznalo.felhasznalonev == user.felhasznalonev %}
+                                <button type="button" class="btn btn-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteGroup-{{ csoport.id }}">
+                                    Csoport törlése
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
+                </div>
+                <div class="modal fade" id="deleteGroup-{{ csoport.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="csoport-id" value="{{ csoport.id }}">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Csoport törlése</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Biztosan törölni szeretnéd ezt a csoportot: <b>{{ csoport.csoport_nev }}</b> ?
+                                    </p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Mégse</button>
+                                    <button type="submit" name="removeGroup" class="btn btn-danger">Törlés</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 </div>
             {% empty %}
                 <p>Nincs elérhető csoport.</p>
             {% endfor %}
-        </div>
+    </div>
     </div>
 
     <div class="modal fade" id="addGroup" tabindex="-1" aria-hidden="true">
@@ -37,8 +67,10 @@
                     <h5 class="modal-title">Csoport létrehozása</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="createGroup">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Létrehozó: {{ felhasznalo_name }}</label>
                         </div>
@@ -51,22 +83,22 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Résztvevők:</label>
-                            <div id="participants" class="mt-3">
-                                <!-- Felhasználó kiválasztók jönnek ide -->
-                            </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addParticipant()">
+                            <div id="participants" class="mt-3"></div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2"
+                                    onclick="addParticipant()">
                                 <i class="bi bi-plus"></i> Új résztvevő hozzáadása
                             </button>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bezárás</button>
-                    <button type="button" class="btn btn-primary">Csoport létrehozása</button>
-                </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bezárás</button>
+                        <button type="submit" name="addGroup" class="btn btn-primary">Csoport létrehozása</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -76,8 +108,8 @@
         }
 
         const felhasznalok = [
-            {% for f in felhasznalok %}
-                {id: {{ f.id }}, nev: "{{ f.felhasznalonev }}"},
+            {% for i in ismerosok %}
+                {id: {{ i.id }}, nev: "{{ i.felhasznalonev }}"},
             {% endfor %}
         ];
 
@@ -92,13 +124,11 @@
             select.classList.add("form-select", "me-2");
             select.required = true;
 
-            // Alap opció
             const defaultOption = document.createElement("option");
             defaultOption.value = "";
             defaultOption.textContent = "-- Válassz tagot --";
             select.appendChild(defaultOption);
 
-            // Összes felhasználó listázása
             felhasznalok.forEach(f => {
                 const option = document.createElement("option");
                 option.value = f.id;
@@ -106,14 +136,13 @@
                 select.appendChild(option);
             });
 
-            // Törlés gomb
             const deleteBtn = document.createElement("button");
             deleteBtn.type = "button";
             deleteBtn.classList.add("btn", "btn-outline-danger", "btn-sm");
             deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
-            deleteBtn.onclick = function() {
+            deleteBtn.onclick = function () {
                 container.remove();
-                // Legalább egy select maradjon
+
                 if (document.querySelectorAll('#participants select').length === 0) {
                     createUserSelect();
                 }
@@ -132,7 +161,6 @@
             createUserSelect();
         }
 
-        // Kezdetben egy üres select
         createUserSelect();
     </script>
 {% endblock %}
