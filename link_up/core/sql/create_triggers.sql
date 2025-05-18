@@ -54,3 +54,12 @@ BEGIN
   END IF;
 END;
 /
+
+CREATE OR REPLACE TRIGGER trg_prevent_admin_delete
+BEFORE DELETE ON felhasznalok
+FOR EACH ROW
+BEGIN
+    IF :OLD.admin = 1 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Admin users cannot be deleted.');
+    END IF;
+END;

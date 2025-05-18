@@ -34,6 +34,8 @@ class AdminSite(admin.AdminSite):
             path('uzenet/add/', self.admin_view(admin_views.uzenet), name='uzenet_add'),
             path('uzenet/<int:pk>/edit/', self.admin_view(admin_views.uzenet), name='uzenet_edit'),
             path('uzenet/<int:pk>/delete/', self.admin_view(admin_views.uzenet_delete), name='uzenet_delete'),
+
+            path('osszegzes/', self.admin_view(admin_views.admin_osszegzes), name='osszegzes'),
         ]
         return custom_urls + urls
 

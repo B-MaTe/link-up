@@ -6,14 +6,11 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.db import connection
 from django.db.models import Q
 from django.utils.timezone import now
-
-from link_up.settings import STATIC_URL
 
 
 class Bejegyzes(models.Model):

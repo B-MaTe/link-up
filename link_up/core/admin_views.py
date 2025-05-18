@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from django.db import connection
 from django.shortcuts import render, redirect, get_object_or_404
 from core.enums import ImageCreationResponse
 from core.models import Felhasznalo, Bejegyzes, Csoport, Komment, Uzenet
@@ -422,3 +424,69 @@ def uzenet_list(request):
     return render(request, 'admin/uzenet/uzenet_list.html', {
         'uzenetek': uzenetek
     })
+
+
+def admin_osszegzes(request):
+    with connection.cursor() as cursor:
+        first = cursor.var(int).var
+        second = cursor.var(int).var
+        third = cursor.var(int).var
+        fourth = cursor.var(int).var
+        fifth = cursor.var(int).var
+        sixth = cursor.var(int).var
+        cursor.callproc('summarize_admin_dashboard', [first, second, third, fourth, fifth, sixth])
+
+        results = [first.getvalue(), second.getvalue(), third.getvalue(), fourth.getvalue(), fifth.getvalue(), sixth.getvalue()]
+
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT f.felhasznalonev, COUNT(k.id) AS kommentek_szama
+            FROM Felhasznalok f
+            JOIN Kommentek k ON f.id = k.felhasznalo_id
+            GROUP BY f.felhasznalonev
+            ORDER BY kommentek_szama DESC
+            FETCH FIRST 10 ROWS ONLY
+        """)
+        komment_aktivitas = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT c.csoport_nev, COUNT(b.id) AS bejegyzes_szam
+            FROM Csoportok c
+            JOIN Bejegyzesek b ON c.id = b.felhasznalo_id
+            GROUP BY c.csoport_nev
+            ORDER BY bejegyzes_szam DESC
+        """)
+        csoport_bejegyzesek = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT DISTINCT f.felhasznalonev
+            FROM Felhasznalok f
+            JOIN Csoportok c ON f.id = c.felhasznalo_id
+            WHERE c.privat_beszelgetes = 1
+        """)
+        privat_felhasznalok = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT f.felhasznalonev, AVG(LENGTH(k.tartalom)) AS atlag_komment_hossz
+            FROM Felhasznalok f
+            JOIN Kommentek k ON f.id = k.felhasznalo_id
+            GROUP BY f.felhasznalonev
+            ORDER BY atlag_komment_hossz DESC
+        """)
+        komment_hossz = cursor.fetchall()
+
+        context = {
+            'adminok_szama': results[0],
+            'felhasznalok_szama': results[1],
+            'csoportok_szama': results[2],
+            'bejegyzesek_szama': results[3],
+            'kommentek_szama': results[4],
+            'uzenetek_szama': results[5],
+            'komment_aktivitas': komment_aktivitas,
+            'csoport_bejegyzesek': csoport_bejegyzesek,
+            'privat_felhasznalok': privat_felhasznalok,
+            'komment_hossz': komment_hossz,
+        }
+
+    return render(request, 'admin/osszegzes.html', context)
