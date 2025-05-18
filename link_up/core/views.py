@@ -1,8 +1,8 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.db.models import Q
-from django.shortcuts import render, redirect
+from django.db.models import Q, Count
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 
@@ -12,7 +12,7 @@ from core.forms import CustomLoginForm
 from django.db import connection
 from django.http import HttpResponse
 
-from .models import Felhasznalo, Bejegyzes, FelhasznaloKapcsolat, Csoport, FelhasznaloCsoport
+from .models import Felhasznalo, Bejegyzes, FelhasznaloKapcsolat, Csoport, FelhasznaloCsoport, Uzenet
 from .service import bejegyzes_service, image_service
 from core.enums import BejegyzesResponse, ImageCreationResponse, KapcsolatStatus, from_string, UzenetResponse
 from .service.bejegyzes_service import add_komment
@@ -306,8 +306,56 @@ def all_message(request):
     return render(request, "messages/all_message.html", {})
 
 
+from django.db.models import Count
+from .models import Csoport, FelhasznaloCsoport, Uzenet, Felhasznalo
+
 @login_required
 def new_message(request):
-    friends = request.user.get_friends()
-    a = 1
+    if request.method == "GET":
+        friends = request.user.get_friends()
+        return render(request, "messages/new_message.html", {"friends": friends})
 
+    if request.method == "POST":
+        friend_id = request.POST.get("friend_id")
+        message = request.POST.get("message")
+
+        if not friend_id or not message:
+            raise ValueError("Hiányzó adatok!")
+
+        friend = get_object_or_404(Felhasznalo, id=friend_id)
+
+        # 1. Keressük meg az összes privát csoportot, amiben az aktuális felhasználó benne van
+        csoport_ids = FelhasznaloCsoport.objects.filter(felhasznalo=request.user).values_list("csoport_id", flat=True)
+
+        # 2. Olyan csoportot keresünk ezek közül, ami privát, a barát is benne van, és pontosan 2 tagja van
+        letezo_csoport = (
+            Csoport.objects
+            .filter(id__in=csoport_ids, privat_beszelgetes=1)
+            .annotate(tagok_szama=Count("felhasznalocsoport"))
+            .filter(tagok_szama=2, felhasznalocsoport__felhasznalo=friend)
+            .first()
+        )
+
+        # 3. Ha nem találtunk, új privát csoportot hozunk létre
+        if not letezo_csoport:
+            letezo_csoport = Csoport.objects.create(privat_beszelgetes=1)
+            FelhasznaloCsoport.objects.bulk_create([
+                FelhasznaloCsoport(csoport=letezo_csoport, felhasznalo=request.user),
+                FelhasznaloCsoport(csoport=letezo_csoport, felhasznalo=friend),
+            ])
+
+        # 4. Üzenet létrehozása
+        Uzenet.objects.create(
+            felhasznalo=request.user,
+            csoport=letezo_csoport,
+            tartalom=message
+        )
+
+        return redirect("messages:index")
+
+
+@login_required()
+def message(request, group_id):
+    group = get_object_or_404(Csoport, id=group_id)
+    all_messages = group.get_messages()
+    return render(request, "messages/conversation.html", {"all_messages": all_messages})

@@ -5,12 +5,25 @@
 {% block title %}Üzenetek{% endblock %}
 
 {% block content %}
-    
-    <select class="form-select" aria-label="Default select example">
-        {% for friend in friends %}
-            <option value="1">One</option>
-        {% endfor %}
-    </select>
+    <div class="container">
+        <h1>Új privát beszélgetés létrehozása</h1>
+        <form action="{% url "new_message" %}" method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="friend-id">Cimzett kiválasztása</label>
+                <select id="friend-id" name="friend_id" class="form-select" aria-label="Default select example">
+                    {% for friend in friends %}
+                        <option value="{{ friend.id }}">{{ friend.felhasznalonev }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="exampleFormControlTextarea1" class="form-label">Írja be az üzenetét:</label>
+                <textarea name="message" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary" type="submit">Küldés</button>
+        </form>
+    </div>
 
 
 {% endblock %}
