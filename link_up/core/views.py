@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
@@ -292,13 +294,65 @@ def health(request):
 
 
 def csoportok_view(request):
-    # csoportok = Csoport.objects.all().order_by('-letrehozas_ido')  # Legújabb csoportok elöl
-    # return render(request, 'groups.html', {'csoportok': csoportok})
+    csoportok = Csoport.objects.filter()
+    sajat_csoportok = FelhasznaloCsoport.objects.filter(Q(felhasznalo_id=request.user.id))
     felhasznalo_name = request.user.felhasznalonev
-    felhasznalok = Felhasznalo.objects.all()
+    ismerosok = FelhasznaloKapcsolat.objects.filter(
+        Q(Q(jelolo=request.user) | Q(jelolt=request.user)) & Q(statusz=KapcsolatStatus.ACCEPTED.name.lower()))
+    ismeros_id_list = []
+    sajat_csoportok_id_list = []
+
+    if request.method == 'POST':
+        if "addGroup" in request.POST:
+            csoport_nev = request.POST.get("gname")
+            tagok_id = request.POST.getlist("tagok")
+            egyedi_tagok_id = list(set(tagok_id))
+            egyedi_tagok_id.append(str(request.user.id))
+            uj_csoport = Csoport.objects.create(
+                csoport_nev=csoport_nev,
+                letrehozas_ido=datetime.datetime.now(),
+                felhasznalo=request.user,
+                privat_beszelgetes=False
+            )
+
+            FelhasznaloCsoport.objects.create(
+                csoport=uj_csoport,
+                felhasznalo=request.user
+            )
+
+            for tag_id in tagok_id:
+                FelhasznaloCsoport.objects.create(
+                    csoport=uj_csoport,
+                    felhasznalo=Felhasznalo.objects.get(pk=tag_id),
+                )
+
+            return redirect('csoportok')
+        elif "removeGroup" in request.POST:
+            torlendo_csoport_id = request.POST.get("csoport-id")
+            Csoport.objects.filter(pk=torlendo_csoport_id).delete()
+
+    for kapcsolat in ismerosok:
+        if kapcsolat.jelolo.id != request.user.id:
+            ismeros_id_list.append(kapcsolat.jelolo.id)
+        if kapcsolat.jelolt.id != request.user.id:
+            ismeros_id_list.append(kapcsolat.jelolt.id)
+
+    ismeros_id_list = list(set(ismeros_id_list))
+
+    ismerosok = Felhasznalo.objects.filter(id__in=ismeros_id_list)
+
+    for csoport in sajat_csoportok:
+        for csopi in csoportok:
+            if csopi.id == csoport.csoport_id:
+                sajat_csoportok_id_list.append(csopi.id)
+
+    sajat_csoportok_id_list = list(set(sajat_csoportok_id_list))
+    csoportok = Csoport.objects.filter(id__in=sajat_csoportok_id_list)
+
     return render(request, 'groups.html', {
         'felhasznalo_name': felhasznalo_name,
-        'felhasznalok': felhasznalok,
+        'ismerosok': ismerosok,
+        'csoportok': csoportok,
     })
 
 
