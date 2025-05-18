@@ -20,7 +20,9 @@
                                 Létrehozó: {{ csoport.felhasznalo.felhasznalonev }}<br>
                                 <span class="badge bg-success">Csoportos</span>
                             </p>
-                            <a href="#" class="btn btn-primary">Csoport megnyitása</a>
+                            <button onclick="groupChat('{{ csoport.id }}', '{{ csoport.csoport_nev }}', '{{ user.id }}')"
+                                    class="btn btn-primary">Csoport megnyitása
+                            </button>
                             {% if csoport.felhasznalo.felhasznalonev == user.felhasznalonev %}
                                 <button type="button" class="btn btn-danger"
                                         data-bs-toggle="modal"
@@ -58,6 +60,22 @@
                 <p>Nincs elérhető csoport.</p>
             {% endfor %}
     </div>
+    <div class="d-none" id="gchat">
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 id="chat-cim"></h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div id="chat-uzenetek"></div>
+                    <input type="hidden" name="csoport-id" id="csoport-id" value="">
+                    <input type="hidden" name="kuldo-id" id="kuldo-id" value="">
+                    <textarea id="gtext" name="gtext" class="form-control mt-2" placeholder="Írj üzenetet..."></textarea>
+                    <button type="submit" name="guzenet" class="btn btn-success mt-2">Küldés</button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <div class="modal fade" id="addGroup" tabindex="-1" aria-hidden="true">
@@ -103,6 +121,24 @@
 
 {% block scripts %}
     <script>
+    function groupChat(csoportId, csoportNev, userId) {
+            const chatDiv = document.getElementById('gchat');
+            const chatCim = document.getElementById('chat-cim');
+            const chatKuldo = document.getElementById('kuldo-id');
+            const csopId = document.getElementById('csoport-id');
+
+            chatCim.textContent = `${csoportNev} - Csoport chat`;
+            chatDiv.classList.remove('d-none');
+            chatDiv.classList.add('d-block');
+            chatKuldo.value = userId;
+            csopId.value = csoportId;
+        }
+        const activeChat = '{{ active_chat }}';
+        const groupName = '{{ group_name }}';
+        if (activeChat && groupName){
+            groupChat(activeChat, groupName, "{{ user.id }}");
+        }
+
         function addGroup() {
             document.getElementById('addGroup').style.display = 'block';
         }
