@@ -303,6 +303,8 @@ def csoportok_view(request):
     sajat_csoportok_id_list = []
     active_group = None
     group_name = None
+    group_uzenetek = []
+    jelenlegi_csoport_id = None
 
     if request.method == 'POST':
         if "addGroup" in request.POST:
@@ -335,12 +337,16 @@ def csoportok_view(request):
             Csoport.objects.filter(pk=torlendo_csoport_id).delete()
 
         elif "guzenet" in request.POST:
+            print(f"POST adatok: {request.POST}")
+
             gtext = request.POST.get("gtext")
             kuldo_id = request.POST.get("kuldo-id")
             csoport_id = request.POST.get("csoport-id")
             csoport = Csoport.objects.get(pk=csoport_id)
             active_group = csoport.id
             group_name = csoport.csoport_nev
+            group_uzenetek = Uzenet.objects.filter(csoport=csoport).order_by('kuldesi_ido')
+            jelenlegi_csoport_id = csoport.id
 
             Uzenet.objects.create(
                 felhasznalo=Felhasznalo.objects.get(pk=kuldo_id),
@@ -348,6 +354,12 @@ def csoportok_view(request):
                 kuldesi_ido=datetime.datetime.now(),
                 tartalom=gtext,
             )
+        elif "open_csoport" in request.POST:
+            csoport_id = request.POST.get("csoport_id")
+            csoport = Csoport.objects.get(pk=csoport_id)
+            group_uzenetek = Uzenet.objects.filter(csoport=csoport).order_by('kuldesi_ido')
+            jelenlegi_csoport_id = csoport_id
+            group_name = csoport.csoport_nev
 
     for kapcsolat in ismerosok:
         if kapcsolat.jelolo.id != request.user.id:
@@ -373,4 +385,7 @@ def csoportok_view(request):
         'csoportok': csoportok,
         'active_chat': active_group,
         'group_name': group_name,
+        'group_uzenetek': group_uzenetek,
+        'jelenlegi_csoport_id': jelenlegi_csoport_id,
+        'jelenlegi_kuldo_id': request.user.id
     })

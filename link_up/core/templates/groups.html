@@ -20,9 +20,11 @@
                                 Létrehozó: {{ csoport.felhasznalo.felhasznalonev }}<br>
                                 <span class="badge bg-success">Csoportos</span>
                             </p>
-                            <button onclick="groupChat('{{ csoport.id }}', '{{ csoport.csoport_nev }}', '{{ user.id }}')"
-                                    class="btn btn-primary">Csoport megnyitása
-                            </button>
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="csoport_id" value="{{ csoport.id }}">
+                                <input type="submit" name="open_csoport" class="btn btn-primary" value="Csoport megnyitása">
+                            </form>
                             {% if csoport.felhasznalo.felhasznalonev == user.felhasznalonev %}
                                 <button type="button" class="btn btn-danger"
                                         data-bs-toggle="modal"
@@ -60,6 +62,8 @@
                 <p>Nincs elérhető csoport.</p>
             {% endfor %}
     </div>
+
+    {% if jelenlegi_csoport_id %}
     <div class="d-none" id="gchat">
         <div class="card mt-3">
             <div class="card-header">
@@ -69,14 +73,29 @@
                 <form method="post">
                     {% csrf_token %}
                     <div id="chat-uzenetek"></div>
-                    <input type="hidden" name="csoport-id" id="csoport-id" value="">
-                    <input type="hidden" name="kuldo-id" id="kuldo-id" value="">
+                    <input type="hidden" name="csoport-id" id="csoport-id" value="{{ jelenlegi_csoport_id }}">
+                    <input type="hidden" name="kuldo-id" id="kuldo-id" value="{{ jelenlegi_kuldo_id }}">
                     <textarea id="gtext" name="gtext" class="form-control mt-2" placeholder="Írj üzenetet..."></textarea>
-                    <button type="submit" name="guzenet" class="btn btn-success mt-2">Küldés</button>
+                    <button type="submit" name="guzenet" value="{{ jelenlegi_csoport_id }}" class="btn btn-success mt-2">Küldés</button>
                 </form>
+                <div class="card-body" style="height: 400px; overflow-y: auto;">
+                    <!-- Üzenetek listája -->
+                    {% for uzenet in group_uzenetek %}
+                    <div class="mb-3 {% if uzenet.felhasznalo.id == user.id %}text-end{% endif %}">
+                        <div class="d-flex {% if uzenet.felhasznalo.id == user.id %}justify-content-end{% endif %}">
+                            <div class="bg-light p-3 rounded" style="max-width: 70%;">
+                                <strong>{{ uzenet.felhasznalo.felhasznalonev }}</strong>
+                                <small class="text-muted ms-2">{{ uzenet.kuldesi_ido|date:"Y-m-d H:i" }}</small>
+                                <p class="mb-0">{{ uzenet.tartalom }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
+    {% endif %}
 
     <div class="modal fade" id="addGroup" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -131,8 +150,11 @@
             chatDiv.classList.remove('d-none');
             chatDiv.classList.add('d-block');
             chatKuldo.value = userId;
-            csopId.value = csoportId;
+            if (csoportId && csoportId !== 'None' && csoportId != null ) {
+                csopId.value = csoportId;
+            }
         }
+
         const activeChat = '{{ active_chat }}';
         const groupName = '{{ group_name }}';
         if (activeChat && groupName){
