@@ -81,6 +81,10 @@ def index(request):
                 return render(request, 'index.html', {'error': True, 'data': data, 'friends': friends})
 
             return redirect('index')
+        elif "delete-post" in request.POST:
+            post_id = request.POST.get('post-id')
+            Bejegyzes.objects.filter(id=post_id).delete()
+            return redirect('index')
 
     return render(request, 'index.html', {'data': data, 'friends': friends})
 
