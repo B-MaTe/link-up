@@ -1,6 +1,7 @@
 # forms.py
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from django.utils.timezone import now
 
 from .models import Felhasznalo
 from django.utils.translation import gettext_lazy as _
@@ -85,6 +86,6 @@ class CustomRegisterForm(forms.ModelForm):
         jelszo = self.cleaned_data["password1"]
         felhasznalonev = self.cleaned_data["felhasznalonev"]
         if commit:
-            user = Felhasznalo.objects.create_user(felhasznalonev=felhasznalonev, jelszo=jelszo)
+            user = Felhasznalo.objects.create_user(felhasznalonev=felhasznalonev, password=jelszo, csatlakozas_ido=now())
             user.save()
         return user
