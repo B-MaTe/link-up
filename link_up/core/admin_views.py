@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from django.db import connection
 from django.shortcuts import render, redirect, get_object_or_404
 from core.enums import ImageCreationResponse
 from core.models import Felhasznalo, Bejegyzes, Csoport, Komment, Uzenet
@@ -422,3 +424,26 @@ def uzenet_list(request):
     return render(request, 'admin/uzenet/uzenet_list.html', {
         'uzenetek': uzenetek
     })
+
+
+def admin_osszegzes(request):
+    with connection.cursor() as cursor:
+        first = cursor.var(int).var
+        second = cursor.var(int).var
+        third = cursor.var(int).var
+        fourth = cursor.var(int).var
+        fifth = cursor.var(int).var
+        sixth = cursor.var(int).var
+        cursor.callproc('summarize_admin_dashboard', [first, second, third, fourth, fifth, sixth])
+
+        results = [first.getvalue(), second.getvalue(), third.getvalue(), fourth.getvalue(), fifth.getvalue(), sixth.getvalue()]
+        context = {
+            'adminok_szama': results[0],
+            'felhasznalok_szama': results[1],
+            'csoportok_szama': results[2],
+            'bejegyzesek_szama': results[3],
+            'kommentek_szama': results[4],
+            'uzenetek_szama': results[5],
+        }
+
+    return render(request, 'admin/osszegzes.html', context)

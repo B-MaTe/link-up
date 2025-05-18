@@ -3,6 +3,7 @@
 
 <div class="card p-3 bg-dark-gray w-100 rounded border-0">
     {% for comment in comments %}
+        {% if comment.felhasznalo %}
         <div class="bg-light-gray rounded mt-3 p-2 d-flex flex-row align-items-center gap-2">
             <img src="{% static comment.felhasznalo|profile_kep_relative_path_or_default %}" alt="Profilkép" class="rounded-circle ratio-1x1" height="50" width="50">
             <div>
@@ -11,5 +12,6 @@
                 <p class="fw-bold">{{ comment.tartalom }}</p>
             </div>
         </div>
+        {% endif %}
     {% endfor %}
 </div>
