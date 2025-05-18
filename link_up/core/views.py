@@ -27,19 +27,22 @@ class CustomLoginView(LoginView):
         user.save(update_fields=['utolso_bejelentkezes'])
         return super().form_valid(form)
 
+
 def index(request):
     data = {}
     friends = []
 
     if request.user.is_authenticated:
-        all = FelhasznaloKapcsolat.objects.filter(Q(Q(jelolo=request.user) | Q(jelolt=request.user)) & Q(statusz=KapcsolatStatus.ACCEPTED.name.lower()))
+        all = FelhasznaloKapcsolat.objects.filter(
+            Q(Q(jelolo=request.user) | Q(jelolt=request.user)) & Q(statusz=KapcsolatStatus.ACCEPTED.name.lower()))
 
         for kapcsolat in all:
             if kapcsolat.jelolo == request.user:
-                friends.append(SearchUser(kapcsolat.jelolt.id, kapcsolat.jelolt.felhasznalonev, kapcsolat.jelolt.profil_kep))
+                friends.append(
+                    SearchUser(kapcsolat.jelolt.id, kapcsolat.jelolt.felhasznalonev, kapcsolat.jelolt.profil_kep))
             else:
-                friends.append(SearchUser(kapcsolat.jelolo.id, kapcsolat.jelolo.felhasznalonev, kapcsolat.jelolo.profil_kep))
-
+                friends.append(
+                    SearchUser(kapcsolat.jelolo.id, kapcsolat.jelolo.felhasznalonev, kapcsolat.jelolo.profil_kep))
 
     if request.method == 'GET':
         page: Page = Page(1, 5, 1, False, False)
@@ -95,7 +98,7 @@ def search_users(request):
 
 
 @login_required
-def user_info(request, user_id = None):
+def user_info(request, user_id=None):
     if user_id:
         user = Felhasznalo.objects.get(id=user_id)
 
@@ -111,7 +114,8 @@ def user_info(request, user_id = None):
     if not same_user:
         from_user = request.user
         to_user = Felhasznalo.objects.get(id=user.id)
-        kapcsolat = FelhasznaloKapcsolat.objects.filter(Q(jelolo=from_user, jelolt=to_user) | Q(jelolo=to_user, jelolt=from_user)).first()
+        kapcsolat = FelhasznaloKapcsolat.objects.filter(
+            Q(jelolo=from_user, jelolt=to_user) | Q(jelolo=to_user, jelolt=from_user)).first()
         if kapcsolat:
             status = from_string(kapcsolat.statusz)
 
@@ -149,11 +153,11 @@ def user_info(request, user_id = None):
             if not same_user:
                 from_user = request.user
                 to_user = Felhasznalo.objects.get(id=user.id)
-                kapcsolat = FelhasznaloKapcsolat.objects.get_or_create(jelolo=from_user, jelolt=to_user, statusz=KapcsolatStatus.PENDING.name.lower())
+                kapcsolat = FelhasznaloKapcsolat.objects.get_or_create(jelolo=from_user, jelolt=to_user,
+                                                                       statusz=KapcsolatStatus.PENDING.name.lower())
                 if kapcsolat:
                     status = from_string(kapcsolat[0].statusz)
                     added = True
-
 
             return render(request, 'user_info.html', {
                 'user': user,
@@ -188,7 +192,6 @@ def user_info(request, user_id = None):
             user.delete()
             return redirect('index')
 
-
     return render(request, 'user_info.html', {
         'user': user,
         'readonly': user != request.user,
@@ -212,11 +215,14 @@ def connections(request):
             kapcsolat.save(update_fields=['statusz'])
             message = "Jelölés sikeresen elutasítva!"
 
-
-    pending_from_user = FelhasznaloKapcsolat.objects.filter(jelolo=request.user, statusz=KapcsolatStatus.PENDING.name.lower())
-    pending_to_user = FelhasznaloKapcsolat.objects.filter(jelolt=request.user, statusz=KapcsolatStatus.PENDING.name.lower())
-    rejected_from_user = FelhasznaloKapcsolat.objects.filter(jelolo=request.user, statusz=KapcsolatStatus.REJECTED.name.lower())
-    rejected_to_user = FelhasznaloKapcsolat.objects.filter(jelolt=request.user, statusz=KapcsolatStatus.REJECTED.name.lower())
+    pending_from_user = FelhasznaloKapcsolat.objects.filter(jelolo=request.user,
+                                                            statusz=KapcsolatStatus.PENDING.name.lower())
+    pending_to_user = FelhasznaloKapcsolat.objects.filter(jelolt=request.user,
+                                                          statusz=KapcsolatStatus.PENDING.name.lower())
+    rejected_from_user = FelhasznaloKapcsolat.objects.filter(jelolo=request.user,
+                                                             statusz=KapcsolatStatus.REJECTED.name.lower())
+    rejected_to_user = FelhasznaloKapcsolat.objects.filter(jelolt=request.user,
+                                                           statusz=KapcsolatStatus.REJECTED.name.lower())
 
     return render(request, 'connections.html', {
         'pending_from_user': pending_from_user,
@@ -225,6 +231,7 @@ def connections(request):
         'rejected_to_user': rejected_to_user,
         'message': message
     })
+
 
 def register(request):
     if request.method == 'POST':
@@ -252,7 +259,7 @@ def health(request):
 
     html_content = f"""
     <html>
-    <head><title>Health Check</title></head>
+    <head><title>Health Check</title></head>F
     <body>
         <h1>Health Check</h1>
         <p>{status}</p>
@@ -261,6 +268,7 @@ def health(request):
     """
 
     return HttpResponse(html_content)
+
 
 def csoportok_view(request):
     # csoportok = Csoport.objects.all().order_by('-letrehozas_ido')  # Legújabb csoportok elöl
@@ -271,3 +279,14 @@ def csoportok_view(request):
         'felhasznalo_name': felhasznalo_name,
         'felhasznalok': felhasznalok,
     })
+
+
+def all_message(request):
+    return render(request, "messages/all_message.html", {})
+
+
+@login_required
+def new_message(request):
+    friends = request.user.get_friends()
+    a = 1
+

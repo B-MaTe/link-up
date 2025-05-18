@@ -1,0 +1,21 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load extra_tags %}
+
+{% block title %}Üzenetek{% endblock %}
+
+{% block content %}
+    
+    <select class="form-select" aria-label="Default select example">
+        {% for friend in friends %}
+            <option value="1">One</option>
+        {% endfor %}
+    </select>
+
+
+{% endblock %}
+{% block scripts %}
+    <script>
+
+    </script>
+{% endblock %}
