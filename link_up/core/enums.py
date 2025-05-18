@@ -7,6 +7,11 @@ class BejegyzesResponse(enum.Enum):
     FILE_FORMAT_ERROR = 3,
     ERROR = 4
 
+class UzenetResponse(enum.Enum):
+    PROFANITY = 1,
+    SUCCESS = 2,
+    ERROR = 3
+
 class ImageCreationResponse(enum.Enum):
     SUCCESS = 1,
     NOT_SUPPORTED_FILE_FORMAT = 2,

@@ -73,7 +73,7 @@ class FelhasznaloKapcsolat(models.Model):
 
 
 class FelhasznaloManager(BaseUserManager):
-    def create_user(self, felhasznalonev, jelszo=None, **extra_fields):
+    def create_user(self, felhasznalonev, password=None, **extra_fields):
         if not felhasznalonev:
             raise ValueError('The Username must be set')
 
@@ -82,21 +82,21 @@ class FelhasznaloManager(BaseUserManager):
         user_id = cursor.fetchone()[0]
 
         user = self.model(id=user_id, felhasznalonev=felhasznalonev, **extra_fields)
-        user.set_password(jelszo)
+        user.set_password(password)
         user.csatlakozas_ido = now()
         user.utolso_bejelentkezes = now()
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, felhasznalonev, jelszo=None, **extra_fields):
+    def create_superuser(self, felhasznalonev, password=None, **extra_fields):
         extra_fields.setdefault('admin', 1)
-        return self.create_user(felhasznalonev, jelszo, **extra_fields)
+        return self.create_user(felhasznalonev, password, **extra_fields)
 
 
 class Felhasznalo(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     felhasznalonev = models.CharField(unique=True, max_length=50)
-    jelszo = models.CharField(max_length=128)
+    password = models.CharField(max_length=128, db_column='jelszo')
     utolso_bejelentkezes = models.DateTimeField(blank=True, null=True)
     csatlakozas_ido = models.DateTimeField(blank=True, null=True, auto_now_add=True)
     admin = models.BooleanField(null=True, blank=True, default=False)
@@ -112,14 +112,6 @@ class Felhasznalo(AbstractBaseUser, PermissionsMixin):
         db_table = 'felhasznalok'
         verbose_name = 'Felhasznalo'
         verbose_name_plural = 'Felhasznalok'
-
-    @property
-    def password(self):
-        return self.jelszo
-
-    @password.setter
-    def password(self, raw_password):
-        self.jelszo = make_password(raw_password)
 
     @property
     def last_login(self):
@@ -158,7 +150,7 @@ class Felhasznalo(AbstractBaseUser, PermissionsMixin):
 class Komment(models.Model):
     id = models.AutoField(primary_key=True)
     felhasznalo = models.ForeignKey(Felhasznalo, models.DO_NOTHING, blank=True, null=True)
-    bejegyzes = models.ForeignKey(Bejegyzes, models.DO_NOTHING, blank=True, null=True)
+    bejegyzes = models.ForeignKey(Bejegyzes, models.DO_NOTHING, blank=True, null=True, related_name='kommentek')
     feltoltesi_ido = models.DateTimeField(blank=True, null=True)
     tartalom = models.CharField(max_length=1000, blank=True, null=True)
 

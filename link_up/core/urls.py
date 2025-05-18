@@ -16,5 +16,7 @@ urlpatterns = [
     path('search_users/', views.search_users, name='search_users'),
     path('csoportok/', views.csoportok_view, name='csoportok'),
     path('message/all', views.all_message, name='messages'),
-    path('message/new', views.new_message, name='new_message')
+    path('message/new', views.new_message, name='new_message'),
+    path('add_comment/', views.add_comment, name='add_comment'),
+    path('kommentek', views.kommentek_for_bejegyzes, name='kommentek_for_bejegyzes'),
 ]
