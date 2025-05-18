@@ -191,6 +191,56 @@ END;
 /
 
 
+CREATE OR REPLACE TRIGGER trg_prevent_admin_delete
+BEFORE DELETE ON felhasznalok
+FOR EACH ROW
+BEGIN
+    IF :OLD.admin = 1 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Admin users cannot be deleted.');
+    END IF;
+END;
+/
+
+-- Stored procedures
+CREATE OR REPLACE PROCEDURE summarize_admin_dashboard (
+    p_admin_count       OUT NUMBER,
+    p_user_count        OUT NUMBER,
+    p_group_count       OUT NUMBER,
+    p_post_count        OUT NUMBER,
+    p_comment_count     OUT NUMBER,
+    p_message_count     OUT NUMBER
+)
+AS
+BEGIN
+    -- Count of admin users
+    SELECT COUNT(*) INTO p_admin_count
+    FROM felhasznalok
+    WHERE admin = 1;
+
+    -- Total registered users
+    SELECT COUNT(*) INTO p_user_count
+    FROM felhasznalok;
+
+    -- Total distinct groups
+    SELECT COUNT(*) INTO p_group_count
+    FROM csoportok;
+
+    -- Total posts
+    SELECT COUNT(*) INTO p_post_count
+    FROM bejegyzesek;
+
+    -- Total comments
+    SELECT COUNT(*) INTO p_comment_count
+    FROM kommentek;
+
+    -- Total messages
+    SELECT COUNT(*) INTO p_message_count
+    FROM uzenetek;
+END;
+/
+
+
+
 -- Felhasznalok
 
 INSERT INTO Felhasznalok (id, felhasznalonev, jelszo, admin, utolso_bejelentkezes, csatlakozas_ido) VALUES (1, 'adam12', 'pbkdf2_sha256$870000$kBehxt8YZVmOoO82sJVbHY$M1atj6oaUuzpnLhB9ZbbJCeikjHB9xX9srAs7MyQ4is=', 0, SYSTIMESTAMP, SYSTIMESTAMP);
@@ -221,11 +271,11 @@ INSERT INTO Felhasznalo_kapcsolatok VALUES (10, 1, 'accepted');
 
 
 -- Csoportok
-INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido) VALUES (1, 1, SYSTIMESTAMP);
-INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido) VALUES (2, 2, SYSTIMESTAMP);
-INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido) VALUES (3, 3, SYSTIMESTAMP);
-INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido) VALUES (4, 4, SYSTIMESTAMP);
-INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido) VALUES (5, 5, SYSTIMESTAMP);
+INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido, csoport_nev, privat_beszelgetes) VALUES (1, 1, SYSTIMESTAMP, "Test csoport", 0);
+INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido, csoport_nev, privat_beszelgetes) VALUES (2, 2, SYSTIMESTAMP, "Test1 csoport", 0);
+INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido, csoport_nev, privat_beszelgetes) VALUES (3, 3, SYSTIMESTAMP, "Test2 csoport", 0);
+INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido, csoport_nev, privat_beszelgetes) VALUES (4, 4, SYSTIMESTAMP, "Test3 csoport", 0);
+INSERT INTO Csoportok (id, felhasznalo_id, letrehozas_ido, csoport_nev, privat_beszelgetes) VALUES (5, 5, SYSTIMESTAMP, "Test4 csoport", 0);
 
 -- Felhasznalo_Csoportok
 

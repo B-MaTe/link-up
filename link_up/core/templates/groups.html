@@ -140,6 +140,11 @@
 
 {% block scripts %}
     <script>
+    let felhasznalok = [
+            {% for i in ismerosok %}
+                {id: {{ i.id }}, nev: "{{ i.felhasznalonev }}"},
+            {% endfor %}
+        ];
     function groupChat(csoportId, csoportNev, userId) {
             const chatDiv = document.getElementById('gchat');
             const chatCim = document.getElementById('chat-cim');
@@ -165,13 +170,7 @@
             document.getElementById('addGroup').style.display = 'block';
         }
 
-        const felhasznalok = [
-            {% for i in ismerosok %}
-                {id: {{ i.id }}, nev: "{{ i.felhasznalonev }}"},
-            {% endfor %}
-        ];
 
-        const participants = document.getElementById("participants");
 
         function createUserSelect() {
             const container = document.createElement("div");
@@ -208,6 +207,8 @@
 
             container.appendChild(select);
             container.appendChild(deleteBtn);
+            
+            const participants = document.getElementById("participants");
             participants.appendChild(container);
         }
 
