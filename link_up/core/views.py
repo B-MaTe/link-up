@@ -11,7 +11,7 @@ from core.forms import CustomLoginForm
 from django.db import connection
 from django.http import HttpResponse
 
-from .models import Felhasznalo, Bejegyzes, FelhasznaloKapcsolat
+from .models import Felhasznalo, Bejegyzes, FelhasznaloKapcsolat, Csoport, FelhasznaloCsoport
 from .service import bejegyzes_service, image_service
 from core.enums import BejegyzesResponse, ImageCreationResponse, KapcsolatStatus, from_string
 
@@ -190,4 +190,12 @@ def health(request):
 
     return HttpResponse(html_content)
 
-
+def csoportok_view(request):
+    # csoportok = Csoport.objects.all().order_by('-letrehozas_ido')  # Legújabb csoportok elöl
+    # return render(request, 'groups.html', {'csoportok': csoportok})
+    felhasznalo_name = request.user.felhasznalonev
+    felhasznalok = Felhasznalo.objects.all()
+    return render(request, 'groups.html', {
+        'felhasznalo_name': felhasznalo_name,
+        'felhasznalok': felhasznalok,
+    })
