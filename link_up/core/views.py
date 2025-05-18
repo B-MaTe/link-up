@@ -304,6 +304,8 @@ def csoportok_view(request):
         Q(Q(jelolo=request.user) | Q(jelolt=request.user)) & Q(statusz=KapcsolatStatus.ACCEPTED.name.lower()))
     ismeros_id_list = []
     sajat_csoportok_id_list = []
+    active_group = None
+    group_name = None
 
     if request.method == 'POST':
         if "addGroup" in request.POST:
@@ -330,9 +332,25 @@ def csoportok_view(request):
                 )
 
             return redirect('csoportok')
+
         elif "removeGroup" in request.POST:
             torlendo_csoport_id = request.POST.get("csoport-id")
             Csoport.objects.filter(pk=torlendo_csoport_id).delete()
+
+        elif "guzenet" in request.POST:
+            gtext = request.POST.get("gtext")
+            kuldo_id = request.POST.get("kuldo-id")
+            csoport_id = request.POST.get("csoport-id")
+            csoport = Csoport.objects.get(pk=csoport_id)
+            active_group = csoport.id
+            group_name = csoport.csoport_nev
+
+            Uzenet.objects.create(
+                felhasznalo=Felhasznalo.objects.get(pk=kuldo_id),
+                csoport=csoport,
+                kuldesi_ido=datetime.datetime.now(),
+                tartalom=gtext,
+            )
 
     for kapcsolat in ismerosok:
         if kapcsolat.jelolo.id != request.user.id:
@@ -356,6 +374,8 @@ def csoportok_view(request):
         'felhasznalo_name': felhasznalo_name,
         'ismerosok': ismerosok,
         'csoportok': csoportok,
+        'active_chat': active_group,
+        'group_name': group_name,
     })
 
 
