@@ -64,14 +64,12 @@ class FelhasznaloCreationForm(forms.ModelForm):
 
 class FelhasznaloChangeForm(forms.ModelForm):
     """Form for updating users in the admin."""
-    jelszo = ReadOnlyPasswordHashField(label="Password")
+    password = ReadOnlyPasswordHashField(label="Password")
 
     class Meta:
         model = Felhasznalo
-        fields = ('felhasznalonev', 'jelszo', 'admin', 'groups', 'user_permissions')
+        fields = ('felhasznalonev', 'password', 'admin', 'groups', 'user_permissions')
 
-    def clean_jelszo(self):
-        return self.initial["jelszo"]
 
 
 class FelhasznaloAdmin(UserAdmin):
@@ -83,7 +81,7 @@ class FelhasznaloAdmin(UserAdmin):
     list_filter = ('admin',)
 
     fieldsets = (
-        (None, {'fields': ('felhasznalonev', 'jelszo')}),
+        (None, {'fields': ('felhasznalonev', 'password')}),
         ('Permissions', {'fields': ('admin', 'groups', 'user_permissions')}),
     )
     add_fieldsets = (
