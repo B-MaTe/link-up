@@ -4,6 +4,7 @@
             <li class="nav-item"><a href="{% url 'index' %}" class="nav-link">Főoldal</a></li>
             {% if user.is_authenticated %}
                 <li class="nav-item"><a href="{% url 'user_info' %}" class="nav-link">Profil</a></li>
+                <li class="nav-item"><a href="{% url 'csoportok' %}" class="nav-link">Csoportok</a></li>
             {% else %}
                 <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Bejelentkezés</a></li>
                 <li class="nav-item"><a href="{% url 'register' %}" class="nav-link">Regisztráció</a></li>

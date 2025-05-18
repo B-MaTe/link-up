@@ -31,6 +31,8 @@ class Csoport(models.Model):
     id = models.AutoField(primary_key=True)
     felhasznalo = models.ForeignKey('Felhasznalo', models.DO_NOTHING, blank=True, null=True)
     letrehozas_ido = models.DateTimeField(blank=True, null=True)
+    csoport_nev = models.CharField(max_length=128)
+    privat_beszelgetes = models.BooleanField(default=False)
 
     class Meta:
         managed = False

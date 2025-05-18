@@ -24,6 +24,8 @@ CREATE TABLE Csoportok (
     id NUMBER(10) PRIMARY KEY,
     felhasznalo_id NUMBER(10),
     letrehozas_ido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    csoport_nev VARCHAR2(128),
+    privat_beszelgetes NUMBER(1) DEFAULT 0,
     FOREIGN KEY (felhasznalo_id) REFERENCES Felhasznalok(id) ON DELETE SET NULL
 );
 
