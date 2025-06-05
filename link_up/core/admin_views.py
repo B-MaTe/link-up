@@ -476,6 +476,138 @@ def admin_osszegzes(request):
         """)
         komment_hossz = cursor.fetchall()
 
+        current_month = datetime.now().strftime("%Y-%m")
+
+        cursor.execute("""
+            WITH TargetMonth AS (
+                SELECT 
+                    TO_DATE(:current_month, 'YYYY-MM') AS start_date,
+                    LAST_DAY(TO_DATE(:current_month, 'YYYY-MM')) AS end_date
+                FROM DUAL
+            )
+            SELECT 
+                c.id AS csoport_id,
+                c.csoport_nev,
+                COUNT(u.id) AS uzenetek_szama
+            FROM 
+                Csoportok c
+            JOIN Uzenetek u ON c.id = u.csoport_id
+            JOIN TargetMonth tm 
+                ON u.kuldesi_ido BETWEEN tm.start_date AND tm.end_date
+            WHERE 
+                c.id IN (
+                    SELECT csoport_id
+                    FROM Felhasznalo_Csoportok
+                    GROUP BY csoport_id
+                    HAVING COUNT(felhasznalo_id) >= 10
+                )
+                AND EXISTS (
+                    SELECT 1
+                    FROM Felhasznalo_Csoportok fc
+                    JOIN Felhasznalok f ON fc.felhasznalo_id = f.id
+                    WHERE fc.csoport_id = c.id
+                    AND f.admin = 1
+                )
+            GROUP BY c.id, c.csoport_nev
+            ORDER BY uzenetek_szama DESC
+        """, {'current_month': current_month})
+
+        # Then get only the first row in Python
+        honap_legtobb_uzenet_csoport = cursor.fetchone()
+
+        now = datetime.now()
+        current_year = now.strftime('%Y')
+        current_month = now.strftime('%m')
+
+        cursor.execute("""
+            WITH ActivitySummary AS (
+                SELECT 
+                    felhasznalo_id,
+                    COUNT(*) AS activity_count
+                FROM (
+                    SELECT felhasznalo_id FROM Uzenetek
+                    WHERE EXTRACT(YEAR FROM kuldesi_ido) = :year
+                      AND EXTRACT(MONTH FROM kuldesi_ido) = :month
+                    UNION ALL
+                    SELECT felhasznalo_id FROM Kommentek
+                    WHERE EXTRACT(YEAR FROM feltoltesi_ido) = :year
+                      AND EXTRACT(MONTH FROM feltoltesi_ido) = :month
+                )
+                GROUP BY felhasznalo_id
+            )
+            SELECT 
+                f.id,
+                f.felhasznalonev,
+                a.activity_count
+            FROM ActivitySummary a
+            JOIN Felhasznalok f ON a.felhasznalo_id = f.id
+            WHERE ROWNUM <= 3
+            ORDER BY a.activity_count DESC
+        """, {'year': current_year, 'month': current_month})
+
+        honap_legtobb_uzenet_top_3 = cursor.fetchall()
+
+        cursor.execute("""
+            WITH AktivFelhasznalok AS (
+                SELECT 
+                    f.id,
+                    f.felhasznalonev,
+                    COUNT(u.id) AS uzenetek_szama
+                FROM 
+                    Felhasznalok f
+                JOIN Uzenetek u ON f.id = u.felhasznalo_id
+                WHERE 
+                    u.kuldesi_ido >= ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+                    AND u.kuldesi_ido < TRUNC(SYSDATE, 'MM')
+                GROUP BY f.id, f.felhasznalonev
+                HAVING COUNT(u.id) >= 5
+            )
+            SELECT 
+                af.felhasznalonev,
+                af.uzenetek_szama,
+                TO_CHAR(f.utolso_bejelentkezes, 'YYYY-MM-DD HH24:MI') AS utolso_bejelentkezes
+            FROM 
+                AktivFelhasznalok af
+            JOIN Felhasznalok f ON af.id = f.id
+            ORDER BY af.uzenetek_szama DESC
+        """)
+
+        aktiv_felhasznalok = cursor.fetchall()
+
+        cursor.execute("""
+            WITH AdminCsoportTagok AS (
+                SELECT 
+                    fc.csoport_id,
+                    COUNT(*) AS admin_db
+                FROM Felhasznalo_Csoportok fc
+                JOIN Felhasznalok f ON fc.felhasznalo_id = f.id
+                WHERE f.admin = 1
+                GROUP BY fc.csoport_id
+                HAVING COUNT(*) > 3
+            ),
+            BejegyzesSzamok AS (
+                SELECT 
+                    c.id AS csoport_id,
+                    COUNT(b.id) AS bejegyzesek_szama
+                FROM Csoportok c
+                JOIN Felhasznalo_Csoportok fc ON c.id = fc.csoport_id
+                JOIN Bejegyzesek b ON fc.felhasznalo_id = b.felhasznalo_id
+                GROUP BY c.id
+                HAVING COUNT(b.id) >= 10
+            )
+            SELECT 
+                c.csoport_nev,
+                a.admin_db,
+                b.bejegyzesek_szama
+            FROM AdminCsoportTagok a
+            JOIN BejegyzesSzamok b ON a.csoport_id = b.csoport_id
+            JOIN Csoportok c ON c.id = a.csoport_id
+            ORDER BY b.bejegyzesek_szama DESC
+        """)
+
+        admin_aktiv_csoportok = cursor.fetchall()
+
+
         context = {
             'adminok_szama': results[0],
             'felhasznalok_szama': results[1],
@@ -487,6 +619,10 @@ def admin_osszegzes(request):
             'csoport_bejegyzesek': csoport_bejegyzesek,
             'privat_felhasznalok': privat_felhasznalok,
             'komment_hossz': komment_hossz,
+            'honap_legtobb_uzenet_csoport': honap_legtobb_uzenet_csoport,
+            'honap_legtobb_uzenet_top_3': honap_legtobb_uzenet_top_3,
+            'aktiv_felhasznalok': aktiv_felhasznalok,
+            'admin_aktiv_csoportok': admin_aktiv_csoportok
         }
 
     return render(request, 'admin/osszegzes.html', context)
